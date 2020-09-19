@@ -1,3 +1,19 @@
 site_name: Interop Programming Language
 theme:
   name: material
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.tabbed
+  - pymdownx.superfences
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+
+nav:
+  - Introduction and Features: index.md
+  - Concepts: []
+  - Types: []
+  - Expressions: []
+  - Statements: []
