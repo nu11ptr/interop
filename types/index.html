@@ -1,0 +1,784 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.12">
+    
+    
+      
+        <title>Types - Interop Programming Language</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4dd2dd8d.min.css">
+      
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#value-types" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href=".." title="Interop Programming Language" class="md-header-nav__button md-logo" aria-label="Interop Programming Language">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Interop Programming Language
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Types
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Interop Programming Language" class="md-nav__button md-logo" aria-label="Interop Programming Language">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Interop Programming Language
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Introduction and Features" class="md-nav__link">
+      Introduction and Features
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      The Language
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="The Language" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon"></span>
+        The Language
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../concepts/" title="Concepts" class="md-nav__link">
+      Concepts
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Types
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" title="Types" class="md-nav__link md-nav__link--active">
+      Types
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#value-types" class="md-nav__link">
+    Value Types
+  </a>
+  
+    <nav class="md-nav" aria-label="Value Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boolean" class="md-nav__link">
+    Boolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integer" class="md-nav__link">
+    Integer
+  </a>
+  
+    <nav class="md-nav" aria-label="Integer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternate-formats-not-repeated-for-others-but-can-be-combined-future" class="md-nav__link">
+    Alternate formats, not repeated for others but can be combined (FUTURE)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-integer-future" class="md-nav__link">
+    Long Integer (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exact-sized-integers-future" class="md-nav__link">
+    Exact sized integers (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string" class="md-nav__link">
+    String
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unit" class="md-nav__link">
+    Unit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuple" class="md-nav__link">
+    Tuple
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-type-expressions" class="md-nav__link">
+    Reference Type Expressions
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference Type Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-future" class="md-nav__link">
+    Array (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-future" class="md-nav__link">
+    List (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-future" class="md-nav__link">
+    Set (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-future" class="md-nav__link">
+    Map (FUTURE)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../expressions/" title="Expressions" class="md-nav__link">
+      Expressions
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../statements/" title="Statements" class="md-nav__link">
+      Statements
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../declarations/" title="Declarations" class="md-nav__link">
+      Declarations
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../comments/" title="Comments" class="md-nav__link">
+      Comments
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#value-types" class="md-nav__link">
+    Value Types
+  </a>
+  
+    <nav class="md-nav" aria-label="Value Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boolean" class="md-nav__link">
+    Boolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integer" class="md-nav__link">
+    Integer
+  </a>
+  
+    <nav class="md-nav" aria-label="Integer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternate-formats-not-repeated-for-others-but-can-be-combined-future" class="md-nav__link">
+    Alternate formats, not repeated for others but can be combined (FUTURE)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#long-integer-future" class="md-nav__link">
+    Long Integer (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exact-sized-integers-future" class="md-nav__link">
+    Exact sized integers (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#string" class="md-nav__link">
+    String
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unit" class="md-nav__link">
+    Unit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuple" class="md-nav__link">
+    Tuple
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-type-expressions" class="md-nav__link">
+    Reference Type Expressions
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference Type Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-future" class="md-nav__link">
+    Array (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-future" class="md-nav__link">
+    List (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-future" class="md-nav__link">
+    Set (FUTURE)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-future" class="md-nav__link">
+    Map (FUTURE)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  
+                
+                
+                  <h1>Types</h1>
+                
+                <h2 id="value-types">Value Types</h2>
+<h3 id="boolean">Boolean</h3>
+<ul>
+<li>Type name: <strong>bool</strong></li>
+<li>Size: <strong>typically 8 bits, but depends on platform</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>true
+false
+</code></pre></div>
+
+<h3 id="integer">Integer</h3>
+<ul>
+<li>Type name: <strong>int, uint</strong></li>
+<li>Size: <strong>at least 31 bits (varies by platform?)</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>1234
+1234u   # future
+</code></pre></div>
+
+<h4 id="alternate-formats-not-repeated-for-others-but-can-be-combined-future">Alternate formats, not repeated for others but can be combined (FUTURE)</h4>
+<div class="highlight"><pre><span></span><code>0x0f0f      # hex
+0b0101      # binary
+0o0707      # octal
+1_000_000   # underscores for grouping
+</code></pre></div>
+
+<h3 id="long-integer-future">Long Integer (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>long, ulong</strong></li>
+<li>Size: <strong>at least 63 bits (varies by platform)</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>1234L
+1234uL
+</code></pre></div>
+
+<h3 id="exact-sized-integers-future">Exact sized integers (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>int8, uint8, byte (alias for uint8), int16, uint16, int32, uint32, int64, uint64</strong></li>
+<li>Size: <strong>8 to 64 bits (based on suffix)</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>1i8
+1u8
+1b  # equiv to 1u8
+1i16
+1u16
+1i32
+1u32
+1i64
+1u64
+</code></pre></div>
+
+<p><em>FUTURE: Char - char (4 bytes - default encoding is UTF8)</em></p>
+<div class="highlight"><pre><span></span><code>&#39;a&#39;
+&#39;\uFFFFFFFF&#39;   # Unicode literal char
+&#39;\xFF&#39;         # hex char
+&#39;\o77&#39;         # octal char
+&#39;\b01010101&#39;   # binary char
+</code></pre></div>
+
+<h3 id="string">String</h3>
+<ul>
+<li>Type name: <strong>str</strong></li>
+<li>Stored as a byte array</li>
+<li>Immutable</li>
+<li>Ends with a null 0 for C compatibility but is not used otherwise in length calculation</li>
+</ul>
+<div class="highlight"><pre><span></span><code>&quot;abc&quot;       # Std set of encodings
+``&quot;abc&quot;``   # future - contains any char except double backtick
+</code></pre></div>
+
+<h3 id="unit">Unit</h3>
+<ul>
+<li>Type name: <strong>()</strong></li>
+<li>Effectively an empty tuple</li>
+<li>Only one value</li>
+</ul>
+<div class="highlight"><pre><span></span><code>() # Future
+</code></pre></div>
+
+<h3 id="tuple">Tuple</h3>
+<ul>
+<li>Type name: <strong>(int,int)</strong></li>
+<li><em># of types listed based on tuple arity</em></li>
+<li>Immutable - changing it returns a new tuple</li>
+<li>Implemented using something like an array (but passed by value)</li>
+</ul>
+<div class="highlight"><pre><span></span><code>(1,)
+(1, 2)
+</code></pre></div>
+
+<h2 id="reference-type-expressions">Reference Type Expressions</h2>
+<h3 id="array-future">Array (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>array[int]</strong></li>
+<li>Fixed length, not resizable</li>
+<li>Mutable</li>
+</ul>
+<div class="highlight"><pre><span></span><code>[|1, 2, 3|]
+</code></pre></div>
+
+<h3 id="list-future">List (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>list[int]</strong></li>
+<li>Has capacity and length</li>
+<li>Appendable up to capacity and then auto-grows</li>
+<li>Implemented using an array</li>
+<li>Can be indexed - O(n) and sliced</li>
+<li>Python-like index operations</li>
+<li>Mutable</li>
+<li>TODO: Doesn't address length/capacity allocation</li>
+</ul>
+<div class="highlight"><pre><span></span><code>[1, 2, 3]
+
+let abc                = [1, 2, 3] # if all elements are same type, no need specify type
+let abc: list[addable] = [&quot;a&quot;, 1]  # if aren&#39;t all same type, list the interface they share (defaults to list[any])
+</code></pre></div>
+
+<h3 id="set-future">Set (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>set[int]</strong></li>
+<li>Implemented using a map (or modified map)</li>
+<li>No guaranteed iteration order</li>
+<li>Mutable</li>
+<li>TODO: Doesn't address capacity allocation</li>
+</ul>
+<div class="highlight"><pre><span></span><code>{|1, 2, 3|}
+
+let abc               = {|1, 2, 3|} # if all elements are same type, no need specify type
+let abc: set[addable] = {|&quot;a&quot;, 1|}  # if aren&#39;t all same type, list the interface they share (defaults to list[any])
+</code></pre></div>
+
+<h3 id="map-future">Map (FUTURE)</h3>
+<ul>
+<li>Type name: <strong>map[str, int]</strong></li>
+<li>No guaranteed iteration order</li>
+<li>Mutable</li>
+<li>TODO: Doesn't address capacity allocation</li>
+</ul>
+<div class="highlight"><pre><span></span><code>{1 -&gt; 2, 3 -&gt; 4}
+
+let abc                    = {1 -&gt; &#39;a&#39;, 3 -&gt; &#39;b&#39;} # if all elements are same type (all keys/all values), no need specify type
+let abc: map[int, addable] = {1 -&gt; &quot;a&quot;, 2 -&gt; 1}  # if aren&#39;t all same type, list the interface they share (defaults to map[int, any] in this case)
+</code></pre></div>
+
+<p><strong>TODO: Missing - floating point? arbitrary length decimal? bigint?</strong></p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../concepts/" title="Concepts" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Concepts
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../expressions/" title="Expressions" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Expressions
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.3636a4ec.min.js"></script>
+      <script src="../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>

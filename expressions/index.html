@@ -1,0 +1,842 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.12">
+    
+    
+      
+        <title>Expressions - Interop Programming Language</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.4dd2dd8d.min.css">
+      
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ifthenelse-expression" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href=".." title="Interop Programming Language" class="md-header-nav__button md-logo" aria-label="Interop Programming Language">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Interop Programming Language
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Expressions
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Interop Programming Language" class="md-nav__button md-logo" aria-label="Interop Programming Language">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Interop Programming Language
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Introduction and Features" class="md-nav__link">
+      Introduction and Features
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      The Language
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="The Language" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon"></span>
+        The Language
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../concepts/" title="Concepts" class="md-nav__link">
+      Concepts
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../types/" title="Types" class="md-nav__link">
+      Types
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Expressions
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" title="Expressions" class="md-nav__link md-nav__link--active">
+      Expressions
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ifthenelse-expression" class="md-nav__link">
+    If/Then/Else Expression
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-expression" class="md-nav__link">
+    Function Expression
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefix-expressions" class="md-nav__link">
+    Prefix Expressions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infix-expressions" class="md-nav__link">
+    Infix Expressions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comprehensions-possible-future" class="md-nav__link">
+    Comprehensions (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#match-future" class="md-nav__link">
+    Match (FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trycatch-possible-future" class="md-nav__link">
+    Try/Catch (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#for" class="md-nav__link">
+    For
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#while" class="md-nav__link">
+    While
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop" class="md-nav__link">
+    Loop
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#with-future" class="md-nav__link">
+    With (FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coroutines-possible-future" class="md-nav__link">
+    Coroutines (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asyncawait" class="md-nav__link">
+    Async/Await
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../statements/" title="Statements" class="md-nav__link">
+      Statements
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../declarations/" title="Declarations" class="md-nav__link">
+      Declarations
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../comments/" title="Comments" class="md-nav__link">
+      Comments
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ifthenelse-expression" class="md-nav__link">
+    If/Then/Else Expression
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-expression" class="md-nav__link">
+    Function Expression
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefix-expressions" class="md-nav__link">
+    Prefix Expressions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infix-expressions" class="md-nav__link">
+    Infix Expressions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comprehensions-possible-future" class="md-nav__link">
+    Comprehensions (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#match-future" class="md-nav__link">
+    Match (FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trycatch-possible-future" class="md-nav__link">
+    Try/Catch (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#for" class="md-nav__link">
+    For
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#while" class="md-nav__link">
+    While
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop" class="md-nav__link">
+    Loop
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#with-future" class="md-nav__link">
+    With (FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coroutines-possible-future" class="md-nav__link">
+    Coroutines (POSSIBLE FUTURE)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asyncawait" class="md-nav__link">
+    Async/Await
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  
+                
+                
+                  <h1>Expressions</h1>
+                
+                <h2 id="ifthenelse-expression">If/Then/Else Expression</h2>
+<ul>
+<li>FUTURE: In addition to bool expressions, if/elif will accept any type that implements the <strong>Bool</strong> interface</li>
+<li>As a safety precaution, type <strong>unit</strong> should not implement <strong>Bool</strong> to prevent assignments in if expressions</li>
+</ul>
+<div class="highlight"><pre><span></span><code># With blocks
+let abc =
+    if test == &quot;123&quot; then:
+        let abc = 1000
+        abc
+    else if test == &quot;456&quot; then:
+        let xyz = 456
+        xyz
+    else:
+        let def = 7
+        def
+    end
+
+# Without blocks
+let abc2 = if test == &quot;123&quot; then 1000 else if test == &quot;456&quot; then 456 else 7
+</code></pre></div>
+
+<h2 id="function-expression">Function Expression</h2>
+<ul>
+<li>Similar to function bindings, minus the binding name</li>
+<li>FUTURE: Consider a shorter/simpler one liner syntax for inline functions</li>
+</ul>
+<div class="highlight"><pre><span></span><code>let abc =
+    func (a, b: int = 1) -&gt; str:
+        &quot;test&quot;
+    end
+
+test(param1 = 123,
+     param2 =
+         func (a, b: int = 1) -&gt; str:
+             &quot;test&quot;
+         end)
+
+# FUTURE
+func (a, b) -&gt; a + b   # single expression only, return type derived from expression?
+</code></pre></div>
+
+<h2 id="prefix-expressions">Prefix Expressions</h2>
+<div class="highlight"><pre><span></span><code>(1)
+-1
+not 1   # FUTURE: rhs can be any type that implements Bool interface
+</code></pre></div>
+
+<h2 id="infix-expressions">Infix Expressions</h2>
+<div class="highlight"><pre><span></span><code>1 + 2
+1 - 2
+1 * 2
+1 / 2
+1 mod 2
+
+1 == 2
+1 != 2
+1 &gt;= 2
+1 &lt;= 2
+1 &gt; 2
+1 &lt; 2
+
+5 in [1, 2, 3]
+5 not in [1, 2, 3]
+1 and 2            # FUTURE: lhs/rhs can be any type that implements Bool interface
+1 or 2             # FUTURE: lhs/rhs can be any type that implements Bool interface
+
+# Bitwise
+250 ^ 32    # xor
+255 &amp; 10    # and
+16 | 48     # or
+~ 16        # not (prefix expr)
+
+# Call
+myname(1, 2, 3)
+myname(1, num = 2, age = 3)     # Can specify args names (once you specify one, the rest must also)
+
+# FUTURE: Indexing (arrays, lists, tuples, and maps)
+# FUTURE: Anything that supports the right interface
+myname[0]     # first element
+myname[-1]    # last element, python-style
+myname[10:15] # slice
+
+# FUTURE: Qualified names
+mymod.test
+myobj.attr
+</code></pre></div>
+
+<h2 id="comprehensions-possible-future">Comprehensions (POSSIBLE FUTURE)</h2>
+<ul>
+<li>TODO: Syntax could be hard to parse</li>
+</ul>
+<div class="highlight"><pre><span></span><code>(x &lt;- for x in range(start: 1, end: 10) if x &gt; 0)    # iterator
+[x &lt;- for x in range(start: 1, end: 10) if x &gt; 0]    # list
+{x &lt;- for x in range(start: 1, end: 10) if x &gt; 0}    # map
+{|x &lt;- for x in range(start: 1, end: 10) if x &gt; 0|}    # set
+</code></pre></div>
+
+<h2 id="match-future">Match (FUTURE)</h2>
+<ul>
+<li>Basic pattern matching</li>
+<li>Typical bind syntax create bindings for matched types</li>
+<li>'as' binds entire expression</li>
+</ul>
+<div class="highlight"><pre><span></span><code>func abc(a Any) -&gt; result[int]:
+    match a:
+        Some(x: int) -&gt; x
+        b: int       -&gt; b
+        _ as y       -&gt; y    # Catch all
+    end
+end
+
+match abc:
+    1, 2 -&gt; true
+    _    -&gt; false
+end
+</code></pre></div>
+
+<h2 id="trycatch-possible-future">Try/Catch (POSSIBLE FUTURE)</h2>
+<ul>
+<li>Not exceptions</li>
+<li>Used with things that implement a special interface</li>
+</ul>
+<div class="highlight"><pre><span></span><code>func abc(a, b: int) -&gt; result[int]:
+    func do_ret(err: error) -&gt; error:
+        println(err)
+        err
+    end
+
+    # single expression version
+    # err is default - specified for illustration
+    let z =
+        try some_op_that_can_fail() catch as err:
+            do_ret(err)
+        end
+end
+
+
+func abc(a, b: int) -&gt; result[int]:
+    func do_ret(err: error) -&gt; error:
+        println(err)
+        err
+    end
+
+    # multi expression version
+    let abc =
+        try:
+            z &lt;- some_op_that_can_fail() # &lt;- syntax only allowed in try block
+            print(z)                     # Normal statements allowed in block too
+            x &lt;- some_other_op()
+            x + z
+        catch as err:  # err is default - specified for illustration
+            do_ret(err)
+        end
+end
+</code></pre></div>
+
+<h2 id="for">For</h2>
+<ul>
+<li>Works with any type that implements the <strong>Iterator[T]</strong> interface</li>
+<li>TODO: Loop labels needed??? (could be tricky with it being an expression)</li>
+<li>alternative: break break?</li>
+<li>FUTURE: Consider making this an expression</li>
+<li>break EXPR works as an early return</li>
+<li>Otherwise, last expression is returned</li>
+</ul>
+<div class="highlight"><pre><span></span><code>for x in xyz:
+    if false then break else continue
+end
+
+# FUTURE: What this could look like in the future???
+let z =
+    for x in xyz:
+        if x == 100 then:
+            break x + 23
+        end
+    else:
+        x
+    end
+</code></pre></div>
+
+<h2 id="while">While</h2>
+<ul>
+<li>Simple while block</li>
+</ul>
+<div class="highlight"><pre><span></span><code>while true:
+    if false then break else continue
+end
+
+# FUTURE: What this could look like in the future???
+let z =
+    while x &gt; 0:
+        if x == 100 then:
+            break x + 23
+        end
+        x += 1
+    else:
+        x
+    end
+</code></pre></div>
+
+<h2 id="loop">Loop</h2>
+<ul>
+<li>Infinite loop</li>
+<li>Effectively Sugar for 'while true'</li>
+</ul>
+<div class="highlight"><pre><span></span><code>let x =
+    loop:
+        if false then:
+            break 1
+        else:
+            continue
+        end
+    end
+</code></pre></div>
+
+<h2 id="with-future">With (FUTURE)</h2>
+<ul>
+<li>Similiar to Python 'with'</li>
+<li>Can be used with any type implementing the 'context' interface</li>
+<li>Special method called on entry and on exit from the block</li>
+<li>If decide to make expression, returns last expression</li>
+</ul>
+<div class="highlight"><pre><span></span><code>let x =
+    with mytype(123) as a:
+        a.do_stuff()
+        123
+    end
+</code></pre></div>
+
+<h2 id="coroutines-possible-future">Coroutines (POSSIBLE FUTURE)</h2>
+<ul>
+<li>if has optional expression behind it, returns it</li>
+</ul>
+<div class="highlight"><pre><span></span><code># Coroutine producing a &quot;lazy list&quot;
+for xyz(x: int) -&gt; coroutine[int, ()]:
+    for y in range(x,100):
+        yield y * 10
+    end
+end
+
+
+# Coroutine
+for xyz() -&gt; coroutine[(), int]:
+    loop:
+        let y := yield
+        println(y)
+    end
+end
+</code></pre></div>
+
+<h2 id="asyncawait">Async/Await</h2>
+<p>TODO</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../types/" title="Types" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Types
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../statements/" title="Statements" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Statements
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.3636a4ec.min.js"></script>
+      <script src="../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
