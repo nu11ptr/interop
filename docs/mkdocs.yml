@@ -13,7 +13,10 @@ markdown_extensions:
 
 nav:
   - Introduction and Features: index.md
-  - Concepts: []
-  - Types: []
-  - Expressions: []
-  - Statements: []
+  - The Language:
+      - Concepts: concepts.md
+      - Types: types.md
+      - Expressions: expressions.md
+      - Statements: statements.md
+      - Declarations: declarations.md
+      - Comments: comments.md
