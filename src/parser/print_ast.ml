@@ -29,6 +29,11 @@ let rec generate_expr buf tabs expr =
       generate_expr buf (tabs + 1) ie;
       generate_block buf (tabs + 1) tbl;
       generate_block buf (tabs + 1) ebl
+  | Func (_, _, args, ret_type, stmts) ->
+      add_string buf "Func: ";
+      generate_func_args buf (tabs + 1) args;
+      generate_type buf (tabs + 1) ret_type "Return ";
+      generate_block buf (tabs + 1) stmts
   | FuncCall (_, _, name, args) ->
       add_string buf "Call: ";
       add_string buf name;
@@ -56,8 +61,7 @@ and generate_bin_op buf op =
 
 and generate_call_arg buf tabs arg = generate_expr buf tabs arg
 
-and generate_call_args buf tabs args =
-  match args with
+and generate_call_args buf tabs = function
   | x :: xs ->
       generate_call_arg buf tabs x;
       generate_call_args buf tabs xs
@@ -69,18 +73,21 @@ and generate_type buf tabs type_ prefix =
   add_string buf "Type: ";
   add_string buf (Types.to_string type_)
 
-and generate_stmt buf tabs stmt =
-  match stmt with
+and generate_stmt buf tabs = function
   | Expr expr -> generate_expr buf tabs expr
-  | LetBind (_, mut, var, type_, expr) ->
+  | LetBind (_, mut, name, type_, expr) ->
       generate_prefix buf tabs;
       add_string buf (if mut then "Var: " else "Let: ");
-      add_string buf var;
+      add_string buf name;
       generate_type buf (tabs + 1) type_ "";
       generate_expr buf (tabs + 1) expr
+  | FuncBind (_, name, expr) ->
+      generate_prefix buf tabs;
+      add_string buf "FuncBind: ";
+      add_string buf name;
+      generate_expr buf (tabs + 1) expr
 
-and generate_stmts buf tabs stmts =
-  match stmts with
+and generate_stmts buf tabs = function
   | x :: xs ->
       generate_stmt buf (tabs + 1) x;
       generate_stmts buf tabs xs
@@ -91,41 +98,28 @@ and generate_block buf tabs stmts =
   add_string buf "Block: ";
   generate_stmts buf tabs stmts
 
-let generate_func_arg buf tabs var type_ =
+and generate_func_arg buf tabs var type_ =
   generate_prefix buf tabs;
   add_string buf "Arg: ";
   add_string buf var;
   generate_type buf (tabs + 1) type_ ""
 
-let rec generate_func_args' buf tabs args type_ =
-  match args with
+and generate_func_args' buf tabs type_ = function
   | x :: xs ->
       generate_func_arg buf tabs x type_;
-      generate_func_args' buf tabs xs type_
+      generate_func_args' buf tabs type_ xs
   | [] -> ()
 
-let rec generate_func_args buf tabs args =
-  match args with
+and generate_func_args buf tabs = function
   | x :: xs ->
-      generate_func_args' buf tabs x.arg_vars x.arg_type;
+      generate_func_args' buf tabs x.arg_type x.arg_vars;
       generate_func_args buf tabs xs
   | [] -> ()
 
-let generate_decl buf tabs decl =
-  match decl with
-  | FuncDecl (_, _, name, args, ret_type, stmts) ->
-      generate_prefix buf tabs;
-      add_string buf "Function: ";
-      add_string buf name;
-      generate_func_args buf (tabs + 1) args;
-      generate_type buf (tabs + 1) ret_type "Return ";
-      generate_block buf (tabs + 1) stmts
-
-let rec generate_decls buf stmts =
-  match stmts with
+let rec generate_top_level buf = function
   | x :: xs ->
-      generate_decl buf 0 x;
-      generate_decls buf xs
+      generate_stmt buf 0 x;
+      generate_top_level buf xs
   | [] ->
       add_char buf '\n';
       contents buf
@@ -134,4 +128,4 @@ let generate stmts =
   (* Adjust this number - initial capacity *)
   let buf = create 1024 in
   add_string buf "Program";
-  generate_decls buf stmts
+  generate_top_level buf stmts

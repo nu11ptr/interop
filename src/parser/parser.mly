@@ -14,12 +14,11 @@
 
 %type <Ast.func_args> func_decl_arg
 
-%type <Ast.decl> func_decl
 %type <Ast.prog> program
 
-%type <Ast.expr> simple_expr expr if_then_block if_then_else
+%type <Ast.expr> simple_expr expr if_then_block if_then_else func func_expr
 
-%type <Ast.stmt> stmt bind
+%type <Ast.stmt> stmt bind func_bind
 %type <Ast.block> block else_block
 
 (* Ordered weakest to strongest precedence *)
@@ -32,7 +31,7 @@
 %%
 
 program :
-    | f=list(func_decl) EOF { f }
+    | f=list(func_bind) EOF { f }
     ;
 
 stmt :
@@ -68,10 +67,21 @@ func_ret_type :
     | RARROW t=basic_type { t }
     ;
 
-func_decl :
-    | FUNC name=ident LPAREN args=func_decl_args RPAREN rt=option(func_ret_type) bl=block SEMI
+func :
+    | LPAREN args=func_decl_args RPAREN rt=option(func_ret_type) bl=block SEMI
     { let ft, rt' = Types.basic_func (Ast.arg_types args) rt in 
-      Ast.FuncDecl (Location.create $startpos $endpos, ft, name, args, rt', bl) }
+      Ast.Func (Location.create $startpos $endpos, ft, args, rt', bl) }
+    ;
+
+func_bind :
+    | FUNC name=ident f=func
+    {  Ast.FuncBind (Location.create $startpos $endpos, name, f) }
+    ;
+
+func_expr :
+    (* This works, but will lose position of the 'func' keyword *)
+    | FUNC f=func
+    { f }
     ;
 
 func_decl_args :
@@ -116,6 +126,7 @@ ident :
 expr :
     | e=simple_expr { e }
     | itb=if_then_block { itb }
+    | f=func_expr { f }
     ;
 
 simple_expr :

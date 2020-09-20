@@ -31,54 +31,59 @@ end
 
 let expect_func_bind =
   {src|Program
-└──Function: test
-   └──Arg: h
-      └──Type: double
-   └──Arg: w
-      └──Type: double
-   └──Return Type: unit
-   └──Block: 
-└──Function: test2
-   └──Arg: h
-      └──Type: int
-   └──Return Type: int
-   └──Block: 
-      └──Integer: 1
+└──FuncBind: test
+   └──Func: 
+      └──Arg: h
+         └──Type: double
+      └──Arg: w
+         └──Type: double
+      └──Return Type: unit
+      └──Block: 
+└──FuncBind: test2
+   └──Func: 
+      └──Arg: h
+         └──Type: int
+      └──Return Type: int
+      └──Block: 
+         └──Integer: 1
 |src}
 
 let expect_simple =
   {src|Program
-└──Function: circle
-   └──Arg: r
-      └──Type: double
-   └──Return Type: double
-   └──Block: 
-      └──Binop: *
-         └──Binop: *
-            └──Double: 3.140000
-            └──Ident: r
-         └──Ident: r
-└──Function: cyl
-   └──Arg: r
-      └──Type: double
-   └──Arg: h
-      └──Type: double
-   └──Return Type: double
-   └──Block: 
-      └──Binop: *
-         └──Ident: h
-         └──Call: circle
-            └──Ident: r
-└──Function: main
-   └──Return Type: unit
-   └──Block: 
-      └──Let: vol
+└──FuncBind: circle
+   └──Func: 
+      └──Arg: r
          └──Type: double
-         └──Call: cyl
-            └──Double: 2.000000
-            └──Double: 5.000000
-      └──Call: println
-         └──Ident: vol
+      └──Return Type: double
+      └──Block: 
+         └──Binop: *
+            └──Binop: *
+               └──Double: 3.140000
+               └──Ident: r
+            └──Ident: r
+└──FuncBind: cyl
+   └──Func: 
+      └──Arg: r
+         └──Type: double
+      └──Arg: h
+         └──Type: double
+      └──Return Type: double
+      └──Block: 
+         └──Binop: *
+            └──Ident: h
+            └──Call: circle
+               └──Ident: r
+└──FuncBind: main
+   └──Func: 
+      └──Return Type: unit
+      └──Block: 
+         └──Let: vol
+            └──Type: double
+            └──Call: cyl
+               └──Double: 2.000000
+               └──Double: 5.000000
+         └──Call: println
+            └──Ident: vol
 |src}
 
 let test_ast expected code _ =
