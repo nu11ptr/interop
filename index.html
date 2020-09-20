@@ -205,13 +205,13 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
     
     <label class="md-nav__link" for="nav-2">
-      The Language
+      Language
       <span class="md-nav__icon md-icon"></span>
     </label>
-    <nav class="md-nav" aria-label="The Language" data-md-level="1">
+    <nav class="md-nav" aria-label="Language" data-md-level="1">
       <label class="md-nav__title" for="nav-2">
         <span class="md-nav__icon md-icon"></span>
-        The Language
+        Language
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -340,7 +340,7 @@
                 
                 
                 <h1 id="introduction-and-features">Introduction and Features</h1>
-<p>Thank you for taking the time to read about the Interop language. It will hopefully become apparent how absolutely passionate I am about this project, and why I think yet another langugage is needed. Below you will find the major language features that I think are worth highlighting at this point.</p>
+<p>Interop is a simple programming language designed for general purpose programming. It does not generate native machine code, but instead compiles to other programming languages for simple FFI. Below is a quick highlight of the features Interop provides.</p>
 <p>Before we get to that, why do I think a new language is needed? In summary, desired language features don't compose between languages. What do I mean by that? I mean if language A that you like has A, B, C features/syntax/elements and language B has D, E, and F features how do you use them together? Answer: You don't, you settle. This right here is why there is so many languages. You can't just fundementally merge two languages, you create a third. (And now we have three problems instead of two... 😀)</p>
 <p>Enough of that, on to the language features!</p>
 <h2 id="feature-summary">Feature Summary</h2>
@@ -442,7 +442,7 @@
       <script>
         app = initialize({
           base: ".",
-          features: [],
+          features: ["navigation.expand"],
           search: Object.assign({
             worker: "assets/javascripts/worker/search.5eca75d3.min.js"
           }, typeof search !== "undefined" && search)
