@@ -256,8 +256,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#variable-binding" class="md-nav__link">
-    Variable binding
+  <a href="#variable-bindings" class="md-nav__link">
+    Variable bindings
   </a>
   
 </li>
@@ -341,8 +341,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#variable-binding" class="md-nav__link">
-    Variable binding
+  <a href="#variable-bindings" class="md-nav__link">
+    Variable bindings
   </a>
   
 </li>
@@ -381,28 +381,55 @@
                 
                 <h2 id="function-bindings">Function bindings</h2>
 <ul>
-<li>Mandatory arg types (not inferred in any way)</li>
-<li>Arg grouping ('a' below is also of type int just like 'b')</li>
-<li>Default values (for example, '1' below</li>
-<li>A fresh copy of each default arg is used at each call site</li>
-<li>Body is made up of one or more statements or expressions</li>
-<li>Exits at either last expression or return statement</li>
+<li>Syntactic sugar for <code>let</code> binding with function expression<ul>
+<li>When not mutable and top level, auto formatting will rewrite as <code>func</code> style</li>
+<li>When mutable or not top level, will be written as <code>let</code> binding style</li>
 </ul>
-<div class="highlight"><pre><span></span><code>func my_func(a, b: int = 1) -&gt; str:
-    &quot;test&quot;
+</li>
+<li>Mandatory arg types (not inferred in any way)</li>
+<li>Arg grouping (<code>a</code> below is also of type <code>int</code> just like <code>b</code>)</li>
+<li>Default values (for example, <code>b</code> = <code>1</code> below, but <code>a</code> has no default value)<ul>
+<li>When arg grouping is used, a default value can only be used with the last arg</li>
+<li>A fresh copy of each default arg is used at each call site (as if passed explicitly)</li>
+</ul>
+</li>
+<li>Body is made up of one or more statements or expressions</li>
+<li>Exits at either last expression or return statement (early return)</li>
+<li>POSSIBLE FUTURE: Allow omitting of arg type when default literal value used</li>
+</ul>
+<div class="highlight"><pre><span></span><code>func my_func(a, b: int = 1) -&gt; int:
+    a + b
 end
+
+# is equivalent to:
+
+let my_func =
+    func (a, b: int = 1) -&gt; int:
+        a + b
+    end
 </code></pre></div>
 
-<h2 id="variable-binding">Variable binding</h2>
+<h2 id="variable-bindings">Variable bindings</h2>
 <ul>
-<li><strong>let</strong> = bind a name to an expression (immutable binding)</li>
-<li><strong>let mut</strong> = bind a name to an expression (mutable binding)</li>
+<li><code>let</code> = bind a name to an expression (immutable binding)</li>
+<li><code>let mut</code> = bind a name to an expression (mutable binding)<ul>
+<li>This means the binding itself can be reassigned, not that the value is mutable</li>
+</ul>
+</li>
 <li>Type is optional in almost all cases (inferred from expression)</li>
-<li>FUTURE: Each binding type can be done in a block</li>
+<li>Multiple bindings separated with a comma<ul>
+<li>Type Alternatives: All have type, None have type, or last has type (arg groups)</li>
+<li>If using arg grouping where last entry has type, then it applies to all</li>
+</ul>
+</li>
+<li>POSSIBLE FUTURE: Each binding type can be done in a block<ul>
+<li>Would allow for simple expression binding only</li>
+</ul>
+</li>
 </ul>
 <div class="highlight"><pre><span></span><code>let     abc               = 123 + add_me()
 let mut def         : str = &quot;test&quot; + &quot;ok&quot;
-let     test1, test2      = 1, 2           # future - rhs is a tuple, it is unpacked into test1/test2
+let     test1, test2      = 1, 2
 
 # POSSIBLE FUTURE
 let:
