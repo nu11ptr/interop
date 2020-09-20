@@ -28,7 +28,7 @@ let my_func =
 ## Variable bindings
 
 - `let` = bind a name to an expression (immutable binding)
-- `let mut` = bind a name to an expression (mutable binding)
+- `let var` = bind a name to an expression (mutable binding)
     - This means the binding itself can be reassigned, not that the value is mutable
 - Type is optional in almost all cases (inferred from expression)
 - Multiple bindings separated with a comma
@@ -39,7 +39,7 @@ let my_func =
 
 ```
 let     abc               = 123 + add_me()
-let mut def         : str = "test" + "ok"
+let var def         : str = "test" + "ok"
 let     test1, test2      = 1, 2
 
 # POSSIBLE FUTURE

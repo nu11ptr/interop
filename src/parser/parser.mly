@@ -40,7 +40,7 @@ stmt :
     ;
 
 block :
-    (* Ideally, make this 's=separated_list(SEMI, stmt)' (and remove all other SEMI)
+    (* Ideally, handle semis here (and remove all other SEMI)
     but need to figure out how to handle the ASI to do this *)
     | COLON s=list(stmt) END { s }
     ;

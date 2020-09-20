@@ -1,10 +1,10 @@
 grammar interop;
 
-program: (func_bind ';')* EOF;
+program: (let_bind ';' | func_bind ';')* EOF;
 
-block: ':' (stmt ';')* 'end';
+block: ':' stmt* 'end';
 
-stmt: let_bind | expr;
+stmt: let_bind ';' | expr ';';
 
 expr: simple_expr | func_lit;
 
