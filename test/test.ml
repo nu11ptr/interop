@@ -7,6 +7,10 @@ func test(h, w: double):
 end
 
 func test2(h: int) -> int:
+    let f =
+        func (x: int) -> int:
+            x
+        end
     1
 end
 |src}
@@ -45,6 +49,14 @@ let expect_func_bind =
          └──Type: int
       └──Return Type: int
       └──Block: 
+         └──Let: f
+            └──Type: <Unknown>
+            └──Func: 
+               └──Arg: x
+                  └──Type: int
+               └──Return Type: int
+               └──Block: 
+                  └──Ident: x
          └──Integer: 1
 |src}
 

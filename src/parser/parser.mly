@@ -16,7 +16,7 @@
 
 %type <Ast.prog> program
 
-%type <Ast.expr> simple_expr expr if_then_block if_then_else func func_expr
+%type <Ast.expr> simple_expr expr if_then_block if_then_else func func_lit
 
 %type <Ast.stmt> stmt bind func_bind
 %type <Ast.block> block else_block
@@ -68,17 +68,17 @@ func_ret_type :
     ;
 
 func :
-    | LPAREN args=func_decl_args RPAREN rt=option(func_ret_type) bl=block SEMI
+    | LPAREN args=func_decl_args RPAREN rt=option(func_ret_type) bl=block
     { let ft, rt' = Types.basic_func (Ast.arg_types args) rt in 
       Ast.Func (Location.create $startpos $endpos, ft, args, rt', bl) }
     ;
 
 func_bind :
-    | FUNC name=ident f=func
+    | FUNC name=ident f=func SEMI
     {  Ast.FuncBind (Location.create $startpos $endpos, name, f) }
     ;
 
-func_expr :
+func_lit :
     (* This works, but will lose position of the 'func' keyword *)
     | FUNC f=func
     { f }
@@ -126,7 +126,7 @@ ident :
 expr :
     | e=simple_expr { e }
     | itb=if_then_block { itb }
-    | f=func_expr { f }
+    | f=func_lit { f }
     ;
 
 simple_expr :
