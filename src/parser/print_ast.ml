@@ -30,7 +30,7 @@ let rec generate_expr buf tabs expr =
       generate_block buf (tabs + 1) tbl;
       generate_block buf (tabs + 1) ebl
   | Func (_, _, args, ret_type, stmts) ->
-      add_string buf "Func: ";
+      add_string buf "Func:";
       generate_func_args buf (tabs + 1) args;
       generate_type buf (tabs + 1) ret_type "Return ";
       generate_block buf (tabs + 1) stmts
@@ -95,7 +95,7 @@ and generate_stmts buf tabs = function
 
 and generate_block buf tabs stmts =
   generate_prefix buf tabs;
-  add_string buf "Block: ";
+  add_string buf "Block:";
   generate_stmts buf tabs stmts
 
 and generate_func_arg buf tabs var type_ =

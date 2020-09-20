@@ -36,26 +36,26 @@ end
 let expect_func_bind =
   {src|Program
 └──FuncBind: test
-   └──Func: 
+   └──Func:
       └──Arg: h
          └──Type: double
       └──Arg: w
          └──Type: double
       └──Return Type: unit
-      └──Block: 
+      └──Block:
 └──FuncBind: test2
-   └──Func: 
+   └──Func:
       └──Arg: h
          └──Type: int
       └──Return Type: int
-      └──Block: 
+      └──Block:
          └──Let: f
             └──Type: <Unknown>
-            └──Func: 
+            └──Func:
                └──Arg: x
                   └──Type: int
                └──Return Type: int
-               └──Block: 
+               └──Block:
                   └──Ident: x
          └──Integer: 1
 |src}
@@ -63,32 +63,32 @@ let expect_func_bind =
 let expect_simple =
   {src|Program
 └──FuncBind: circle
-   └──Func: 
+   └──Func:
       └──Arg: r
          └──Type: double
       └──Return Type: double
-      └──Block: 
+      └──Block:
          └──Binop: *
             └──Binop: *
                └──Double: 3.140000
                └──Ident: r
             └──Ident: r
 └──FuncBind: cyl
-   └──Func: 
+   └──Func:
       └──Arg: r
          └──Type: double
       └──Arg: h
          └──Type: double
       └──Return Type: double
-      └──Block: 
+      └──Block:
          └──Binop: *
             └──Ident: h
             └──Call: circle
                └──Ident: r
 └──FuncBind: main
-   └──Func: 
+   └──Func:
       └──Return Type: unit
-      └──Block: 
+      └──Block:
          └──Let: vol
             └──Type: double
             └──Call: cyl
