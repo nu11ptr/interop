@@ -1,6 +1,8 @@
 site_name: Interop Programming Language
 theme:
   name: material
+  features:
+    - navigation.expand # This is insider feature at time of this writing
 
 markdown_extensions:
   - admonition
@@ -13,7 +15,7 @@ markdown_extensions:
 
 nav:
   - Introduction and Features: index.md
-  - The Language:
+  - Language:
       - Concepts: concepts.md
       - Types: types.md
       - Expressions: expressions.md
