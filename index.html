@@ -341,44 +341,99 @@
                 
                 <h1 id="introduction-and-features">Introduction and Features</h1>
 <p>Interop is a simple programming language designed for general purpose programming. It does not generate native machine code, but instead compiles to other programming languages for simple FFI. Below is a quick highlight of the features Interop provides.</p>
-<p>Before we get to that, why do I think a new language is needed? In summary, desired language features don't compose between languages. What do I mean by that? I mean if language A that you like has A, B, C features/syntax/elements and language B has D, E, and F features how do you use them together? Answer: You don't, you settle. This right here is why there is so many languages. You can't just fundementally merge two languages, you create a third. (And now we have three problems instead of two... 😀)</p>
+<p>Before we get to that, why do I think a new language is needed? In summary, desired language features don't compose between languages. What do I mean by that? I mean if language A that you like has A, B, C features/syntax/elements and language B has D, E, and F features how do you use them together? Answer: You don't, you settle. This right here is why there is so many languages. You can't just fundementally merge two languages, you create a third.</p>
 <p>Enough of that, on to the language features!</p>
 <h2 id="feature-summary">Feature Summary</h2>
 <ul>
-<li>Imagine Go, Python, and Rust had a baby 😀<ul>
-<li>Not trying to break huge new ground, but refine existing ideas</li>
+<li>
+<p>Python inspired syntax and behavior</p>
+<ul>
+<li>"magic methods"</li>
+<li><code>with</code> blocks</li>
+<li>List/set/map/generator comprehensions</li>
+<li>"Truthy" boolean expressions</li>
 </ul>
 </li>
-<li>Simple language with a small feature set (Go), but that must compose well together</li>
-<li>Syntax Python-like, but not exactly<ul>
-<li>No significant whitespace</li>
+<li>
+<p>Opinionated auto-formatting</p>
+<ul>
+<li>Only one correct way to format code - language designed for it</li>
+<li>Whitespace not significant (uses <code>:</code> and <code>end</code> to deliminate blocks)</li>
 </ul>
 </li>
-<li>A safe language<ul>
+<li>
+<p>Compiles to other languages (no direct native compilatoin)</p>
+<ul>
+<li>Takes advantage of years of libraries and optimizations from other languages</li>
+<li>Multiple backends:<ul>
+<li>Go = 1st</li>
+<li>Future: Bytecode (for fast compiles, REPL, and testing only)</li>
+<li>Future: C/C++</li>
+<li>???</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Sum types and pattern matching</p>
+<ul>
+<li>First class enums</li>
+</ul>
+</li>
+<li>
+<p>Closures and first class functions</p>
+</li>
+<li>
+<p>No exceptions</p>
+<ul>
+<li>Result and option enums</li>
+<li>Try/catch blocks for auto-unwrapping (no stack unwinding)</li>
+</ul>
+</li>
+<li>
+<p>Limited or no subtyping (undecided)</p>
+<ul>
+<li>First class interfaces play role of subtypes</li>
+</ul>
+</li>
+<li>
+<p>Static typing</p>
+<ul>
+<li>Basic type inference - top level functions define types</li>
+<li>Basic generics</li>
+</ul>
+</li>
+<li>
+<p>Value and reference types</p>
+<ul>
+<li>Value types are immutable</li>
+</ul>
+</li>
+<li>
+<p>A safe language</p>
+<ul>
 <li>No null poiners, statically typed, etc. (but not as safe as Ada/Rust)</li>
 </ul>
 </li>
-<li>Large focuse on interoperability with other languages by generating into those languages directly (Haxe/Nim)<ul>
-<li>Hence the name "Interop"</li>
-<li>First target language will be Go</li>
-</ul>
+<li>
+<p>Highly opinionated, not a lot of different ways to do things (Go)</p>
 </li>
-<li>Highly opinionated, not a lot of different ways to do things (Go)</li>
-<li>Slightly functional, but imperative (Rust)<ul>
+<li>
+<p>Slightly functional, but imperative (Rust)</p>
+<ul>
 <li>Most things are an expression, first class functions, sum types, pattern matching, etc.</li>
 </ul>
 </li>
-<li>Error handling using special type of try/catch block but not really exceptions (no stack unwinding - a little like Swift)</li>
-<li>Major focus on auto-formatting<ul>
-<li>There will be one "correct" way to format and the language will be designed for it</li>
-</ul>
-</li>
-<li>Automatic memory management<ul>
-<li>Likely using tracing garbage collection for most language targets</li>
+<li>
+<p>Automatic memory management</p>
+<ul>
+<li>Memory cleanup strategy inherited by target language</li>
 <li>Value types will minimize amount of garbage on some targets</li>
 </ul>
 </li>
-<li>Parallelism must be first class<ul>
+<li>
+<p>First class parallelism</p>
+<ul>
 <li>Still under consideration</li>
 <li>Leaning towards async/await model</li>
 </ul>
