@@ -2,5 +2,6 @@
     "ocaml.sandbox": {
         "kind": "opam",
         "switch": "default"
-    }
+    },
+    "go.inferGopath": false
 }

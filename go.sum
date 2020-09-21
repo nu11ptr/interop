@@ -1,0 +1,4 @@
+github.com/antlr/antlr4 v0.0.0-20200119161855-7a3f40bc341d h1:YyyukUZiej+hTJINHjowi57xLQE9SN2KOJ7kYMKhr7I=
+github.com/antlr/antlr4 v0.0.0-20200119161855-7a3f40bc341d/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
+github.com/antlr/antlr4 v0.0.0-20200915201312-e73f72be7355 h1:4QGS7p0a6SDij+FheX1Sd+Z9klFcFGXJoDiKUSu4fyk=
+github.com/antlr/antlr4 v0.0.0-20200915201312-e73f72be7355/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=

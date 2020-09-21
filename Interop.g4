@@ -1,4 +1,4 @@
-grammar interop
+grammar Interop
 	;
 
 program: (let_bind ';' | func_bind ';')* EOF;
