@@ -1,96 +1,136 @@
 ## If/Then/Else Expression
 
-- FUTURE: In addition to bool expressions, if/elif will accept any type that implements the **Bool** interface
-  - As a safety precaution, type **unit** should not implement **Bool** to prevent assignments in if expressions
+- Typical `if`/`then`/`else` construct
+- Last expression in each block is used as type
+- Single line version handy for simple conditional `let` bindings
 
-```
-# With blocks
-let abc =
-    if test == "123" then:
-        let abc = 1000
-        abc
-    else if test == "456" then:
-        let xyz = 456
-        xyz
-    else:
-        let def = 7
-        def
-    end
+=== "With Blocks"
 
-# Without blocks
-let abc2 = if test == "123" then 1000 else if test == "456" then 456 else 7
-```
+    ```
+    # With blocks
+    let abc =
+        if test == "123" then:
+            let abc = 1000
+            abc
+        else if test == "456" then:
+            let xyz = 456
+            xyz
+        else:
+            let def = 7
+            def
+        end
+    ```
+
+=== "Without Blocks"
+
+    ```
+    let abc = if b == 1 then 5 else 3
+
+    # Nested (avoid, hard to read) - TODO: we could easily make this illegal
+    let abc2 = if test == "123" then 1000 else if test == "456" then 456 else 7
+    ```
 
 ## Function Expression
 
-- Similar to function bindings, minus the binding name
-- FUTURE: Consider a shorter/simpler one liner syntax for inline functions
+- Identical to function bindings, minus the binding name (see "Function Bindings")
 
-```
-let abc =
-    func (a, b: int = 1) -> str:
-        "test"
-    end
+=== "Function Expression"
 
-test(param1 = 123,
-     param2 =
-         func (a, b: int = 1) -> str:
-             "test"
-         end)
+    ```
+    let abc =
+        func (a, b: int = 1) -> str:
+            "test"
+        end
+    ```
 
-# FUTURE
-func (a, b) -> a + b   # single expression only, return type derived from expression?
-```
+=== "Single Line Expression"
 
-## Prefix Expressions
+    ```
+    # arg types derived from call site
+    func (a, b) -> a + b 
 
-```
-(1)
--1
-not 1   # FUTURE: rhs can be any type that implements Bool interface
-```
+    # Can be embedded at a function call site
+    test(param1 = 123, param2 = func (a, b) -> a + b)
+    ```
 
-## Infix Expressions
+## Basic Expressions
 
-```
-1 + 2
-1 - 2
-1 * 2
-1 / 2
-1 mod 2
+=== "Prefix"
 
-1 == 2
-1 != 2
-1 >= 2
-1 <= 2
-1 > 2
-1 < 2
+    ```
+    (1)
+    -1
+    not 1   # FUTURE: rhs can be any type that implements Bool interface
+    ```
 
-5 in [1, 2, 3]
-5 not in [1, 2, 3]
-1 and 2            # FUTURE: lhs/rhs can be any type that implements Bool interface
-1 or 2             # FUTURE: lhs/rhs can be any type that implements Bool interface
 
-# Bitwise
-250 ^ 32    # xor
-255 & 10    # and
-16 | 48     # or
-~ 16        # not (prefix expr)
+=== "Math"
 
-# Call
-myname(1, 2, 3)
-myname(1, num = 2, age = 3)     # Can specify args names (once you specify one, the rest must also)
+    ```
+    1 + 2
+    1 - 2
+    1 * 2
+    1 / 2
+    1 mod 2
+    ```
 
-# FUTURE: Indexing (arrays, lists, tuples, and maps)
-# FUTURE: Anything that supports the right interface
-myname[0]     # first element
-myname[-1]    # last element, python-style
-myname[10:15] # slice
+=== "Comparison"
 
-# FUTURE: Qualified names
-mymod.test
-myobj.attr
-```
+    ```
+    1 == 2
+    1 != 2
+    1 >= 2
+    1 <= 2
+    1 > 2
+    1 < 2
+    ```
+
+=== "Boolean"
+
+    ```
+    5 in [1, 2, 3]
+    5 not in [1, 2, 3]
+
+    # Can be any type that implements Bool interface
+    1 and 2
+    1 or 2
+    ```
+
+=== "Bitwise"
+
+    ```
+    250 ^ 32    # xor
+    255 & 10    # and
+    16 | 48     # or
+    ~ 16        # not
+    ```
+
+=== "Func. Calls"
+
+    ```
+    # Call
+    myname(1, 2, 3)
+
+    # Can specify args names (once you specify one, the rest must also)
+    myname(1, num = 2, age = 3)
+    ```
+
+=== "Indexing"
+
+    ```
+    # Indexing can be done for arrays, lists, tuples, and maps
+    # Anything that supports the correct interface
+    myname[0]     # first element
+    myname[-1]    # last element, python-style
+    myname[10:15] # slice
+    ```
+
+=== "Qualified Names"
+
+    ```
+    mymod.test
+    myobj.attr
+    ```
 
 ## Comprehensions (POSSIBLE FUTURE)
 
@@ -103,26 +143,32 @@ myobj.attr
 {|x <- for x in range(start: 1, end: 10) if x > 0|}    # set
 ```
 
-## Match (FUTURE)
+## Match
 
 - Basic pattern matching
 - Typical bind syntax create bindings for matched types
-- 'as' binds entire expression
+- `as` binds entire expression
 
-```
-func abc(a Any) -> result[int]:
-    match a:
-        Some(x: int) -> x
-        b: int       -> b
-        _ as y       -> y    # Catch all
+=== "Basic Pattern Match"
+
+    ```
+    match abc with:
+        1, 2 -> true
+        _    -> false
     end
-end
+    ```
 
-match abc:
-    1, 2 -> true
-    _    -> false
-end
-```
+=== "Match on Types"
+
+    ```
+    func abc(a: Any) -> result[int]:
+        match a with:
+            Some(x: int) -> x
+            b: int       -> b
+            _ as y       -> y    # Catch all
+        end
+    end
+    ```
 
 ## Try/Catch (POSSIBLE FUTURE)
 
