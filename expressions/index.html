@@ -251,15 +251,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefix-expressions" class="md-nav__link">
-    Prefix Expressions
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#infix-expressions" class="md-nav__link">
-    Infix Expressions
+  <a href="#basic-expressions" class="md-nav__link">
+    Basic Expressions
   </a>
   
 </li>
@@ -272,8 +265,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#match-future" class="md-nav__link">
-    Match (FUTURE)
+  <a href="#match" class="md-nav__link">
+    Match
   </a>
   
 </li>
@@ -411,15 +404,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prefix-expressions" class="md-nav__link">
-    Prefix Expressions
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#infix-expressions" class="md-nav__link">
-    Infix Expressions
+  <a href="#basic-expressions" class="md-nav__link">
+    Basic Expressions
   </a>
   
 </li>
@@ -432,8 +418,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#match-future" class="md-nav__link">
-    Match (FUTURE)
+  <a href="#match" class="md-nav__link">
+    Match
   </a>
   
 </li>
@@ -507,9 +493,11 @@
                 
                 <h2 id="ifthenelse-expression">If/Then/Else Expression</h2>
 <ul>
-<li>FUTURE: In addition to bool expressions, if/elif will accept any type that implements the <strong>Bool</strong> interface</li>
-<li>As a safety precaution, type <strong>unit</strong> should not implement <strong>Bool</strong> to prevent assignments in if expressions</li>
+<li>Typical <code>if</code>/<code>then</code>/<code>else</code> construct</li>
+<li>Last expression in each block is used as type</li>
+<li>Single line version handy for simple conditional <code>let</code> bindings</li>
 </ul>
+<div class="tabbed-set" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">With Blocks</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code># With blocks
 let abc =
     if test == &quot;123&quot; then:
@@ -522,77 +510,110 @@ let abc =
         let def = 7
         def
     end
+</code></pre></div>
 
-# Without blocks
+</div>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Without Blocks</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>let abc = if b == 1 then 5 else 3
+
+# Nested (avoid, hard to read) - TODO: we could easily make this illegal
 let abc2 = if test == &quot;123&quot; then 1000 else if test == &quot;456&quot; then 456 else 7
 </code></pre></div>
 
+</div>
+</div>
 <h2 id="function-expression">Function Expression</h2>
 <ul>
-<li>Similar to function bindings, minus the binding name</li>
-<li>FUTURE: Consider a shorter/simpler one liner syntax for inline functions</li>
+<li>Identical to function bindings, minus the binding name (see "Function Bindings")</li>
 </ul>
+<div class="tabbed-set" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><label for="__tabbed_2_1">Function Expression</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code>let abc =
     func (a, b: int = 1) -&gt; str:
         &quot;test&quot;
     end
-
-test(param1 = 123,
-     param2 =
-         func (a, b: int = 1) -&gt; str:
-             &quot;test&quot;
-         end)
-
-# FUTURE
-func (a, b) -&gt; a + b   # single expression only, return type derived from expression?
 </code></pre></div>
 
-<h2 id="prefix-expressions">Prefix Expressions</h2>
+</div>
+<input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><label for="__tabbed_2_2">Single Line Expression</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code># arg types derived from call site
+func (a, b) -&gt; a + b 
+
+# Can be embedded at a function call site
+test(param1 = 123, param2 = func (a, b) -&gt; a + b)
+</code></pre></div>
+
+</div>
+</div>
+<h2 id="basic-expressions">Basic Expressions</h2>
+<div class="tabbed-set" data-tabs="3:8"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><label for="__tabbed_3_1">Prefix</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code>(1)
 -1
 not 1   # FUTURE: rhs can be any type that implements Bool interface
 </code></pre></div>
 
-<h2 id="infix-expressions">Infix Expressions</h2>
+</div>
+<input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><label for="__tabbed_3_2">Math</label><div class="tabbed-content">
 <div class="highlight"><pre><span></span><code>1 + 2
 1 - 2
 1 * 2
 1 / 2
 1 mod 2
+</code></pre></div>
 
-1 == 2
+</div>
+<input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><label for="__tabbed_3_3">Comparison</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>1 == 2
 1 != 2
 1 &gt;= 2
 1 &lt;= 2
 1 &gt; 2
 1 &lt; 2
+</code></pre></div>
 
-5 in [1, 2, 3]
+</div>
+<input id="__tabbed_3_4" name="__tabbed_3" type="radio" /><label for="__tabbed_3_4">Boolean</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>5 in [1, 2, 3]
 5 not in [1, 2, 3]
-1 and 2            # FUTURE: lhs/rhs can be any type that implements Bool interface
-1 or 2             # FUTURE: lhs/rhs can be any type that implements Bool interface
 
-# Bitwise
-250 ^ 32    # xor
+# Can be any type that implements Bool interface
+1 and 2
+1 or 2
+</code></pre></div>
+
+</div>
+<input id="__tabbed_3_5" name="__tabbed_3" type="radio" /><label for="__tabbed_3_5">Bitwise</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>250 ^ 32    # xor
 255 &amp; 10    # and
 16 | 48     # or
-~ 16        # not (prefix expr)
+~ 16        # not
+</code></pre></div>
 
-# Call
+</div>
+<input id="__tabbed_3_6" name="__tabbed_3" type="radio" /><label for="__tabbed_3_6">Func. Calls</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code># Call
 myname(1, 2, 3)
-myname(1, num = 2, age = 3)     # Can specify args names (once you specify one, the rest must also)
 
-# FUTURE: Indexing (arrays, lists, tuples, and maps)
-# FUTURE: Anything that supports the right interface
+# Can specify args names (once you specify one, the rest must also)
+myname(1, num = 2, age = 3)
+</code></pre></div>
+
+</div>
+<input id="__tabbed_3_7" name="__tabbed_3" type="radio" /><label for="__tabbed_3_7">Indexing</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code># Indexing can be done for arrays, lists, tuples, and maps
+# Anything that supports the correct interface
 myname[0]     # first element
 myname[-1]    # last element, python-style
 myname[10:15] # slice
+</code></pre></div>
 
-# FUTURE: Qualified names
-mymod.test
+</div>
+<input id="__tabbed_3_8" name="__tabbed_3" type="radio" /><label for="__tabbed_3_8">Qualified Names</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>mymod.test
 myobj.attr
 </code></pre></div>
 
+</div>
+</div>
 <h2 id="comprehensions-possible-future">Comprehensions (POSSIBLE FUTURE)</h2>
 <ul>
 <li>TODO: Syntax could be hard to parse</li>
@@ -603,26 +624,32 @@ myobj.attr
 {|x &lt;- for x in range(start: 1, end: 10) if x &gt; 0|}    # set
 </code></pre></div>
 
-<h2 id="match-future">Match (FUTURE)</h2>
+<h2 id="match">Match</h2>
 <ul>
 <li>Basic pattern matching</li>
 <li>Typical bind syntax create bindings for matched types</li>
-<li>'as' binds entire expression</li>
+<li><code>as</code> binds entire expression</li>
 </ul>
-<div class="highlight"><pre><span></span><code>func abc(a Any) -&gt; result[int]:
-    match a:
-        Some(x: int) -&gt; x
-        b: int       -&gt; b
-        _ as y       -&gt; y    # Catch all
-    end
-end
-
-match abc:
+<div class="tabbed-set" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><label for="__tabbed_4_1">Basic Pattern Match</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>match abc with:
     1, 2 -&gt; true
     _    -&gt; false
 end
 </code></pre></div>
 
+</div>
+<input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><label for="__tabbed_4_2">Match on Types</label><div class="tabbed-content">
+<div class="highlight"><pre><span></span><code>func abc(a: Any) -&gt; result[int]:
+    match a with:
+        Some(x: int) -&gt; x
+        b: int       -&gt; b
+        _ as y       -&gt; y    # Catch all
+    end
+end
+</code></pre></div>
+
+</div>
+</div>
 <h2 id="trycatch-possible-future">Try/Catch (POSSIBLE FUTURE)</h2>
 <ul>
 <li>Not exceptions</li>
