@@ -1,0 +1,12 @@
+expr : IDENT | INT | STRING
+
+call_arg_pair : IDENT "=" expr
+_call_arg     : call_arg_pair | expr
+call          : IDENT "(" [_call_arg ("," _call_arg)* ","?] ")"
+
+IDENT  : /[a-zA-Z]+/
+STRING : "\"" /.*/ "\""
+
+%import common.SIGNED_INT -> INT
+%import common.WS
+%ignore WS

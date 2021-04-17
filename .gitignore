@@ -5,3 +5,4 @@ _build/
 *.class
 *.java
 pkg/parser/
+__pycache__/
