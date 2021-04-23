@@ -1,12 +1,26 @@
-_expr : IDENT | INTEGER | STRING
+program: decl*
+?decl : func
+?stmt : expr
+?expr : simple_expr
+?simple_expr : INTEGER | STRING | TRUE | FALSE | call
 
-call_arg      : [IDENT "="] _expr
-call          : IDENT "(" [call_arg ("," call_arg)* [","]] ")"
+type_ : IDENT
 
-IDENT  : /[a-zA-Z]+/
+func_arg : IDENT ("," IDENT)* ":" type_ ["=" simple_expr]
+func : "func" IDENT "(" [func_arg ("," func_arg)* [","]] ")" ["->" type_] ":" stmt* "end"
 
+call_arg : [IDENT "="] simple_expr
+call : IDENT "(" [call_arg ("," call_arg)* [","]] ")"
+
+TRUE : "true"
+FALSE : "false"
+
+IDENT : /[a-zA-Z]+/
 STRING : "\"" /.*/ "\""
+DIGIT: "0".."9"
+INTEGER:  ["+"|"-"] DIGIT+
 
-%import common.SIGNED_INT -> INTEGER
-%import common.WS
+COMMENT: /#[^\r\n]*/
+WS: /[ \t\f\r\n]+/
+%ignore COMMENT
 %ignore WS

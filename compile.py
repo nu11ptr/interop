@@ -9,7 +9,7 @@ _PARSER = "interop.lark"
 
 def create_parser() -> Lark:
     with open(_PARSER, "r") as f:
-        parser = Lark(f, start="call", debug=True, parser="lalr")
+        parser = Lark(f, start="program", debug=True, parser="lalr")
 
     return parser
 
