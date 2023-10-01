@@ -7,7 +7,7 @@ Expr = { SimpleExpr | IfBlock }
 
 IfBlock = { If ~ SimpleExpr ~ Block }
 
-Block = { Colon ~ NEWLINE* ~ PEEK_ALL ~ PUSH(Indent*) ~ Expr? ~ NEWLINE* ~ DROP }
+Block = { Colon ~ NEWLINE* ~ PEEK_ALL ~ PUSH(Indent*) ~ Expr? ~ NEWLINE* ~ (End ~ DROP? | DROP ~ End?) }
 
 // Tokens
 
