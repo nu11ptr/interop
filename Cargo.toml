@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["crates/compiler"]
+members = ["crates/ast", "crates/compiler", "crates/go_convert"]
