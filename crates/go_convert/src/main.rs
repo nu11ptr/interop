@@ -9,7 +9,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // let value = serde_json::to_value(&go_pkgs)?;
         // println!("{}", serde_json::to_string_pretty(&value)?);
 
-        let convert = GoConversion::default();
+        let bump = bumpalo::Bump::new();
+        let convert = GoConversion::new(&bump);
         let pkgs = go_pkgs
             .iter()
             .map(|(name, pkg)| (name.clone(), convert.convert(pkg)))

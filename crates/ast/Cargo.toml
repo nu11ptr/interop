@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 bumpalo = { version = "3.16", features = ["collections", "std"] }
+indexmap = "2.2.6"
