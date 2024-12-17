@@ -6,7 +6,13 @@ SimpleExpr = { "1" | "(" ~ Expr ~ ")" }
 Expr = { SimpleExpr | IfExpr }
 
 IfExpr = { "if" ~ SimpleExpr ~ "then" ~ IfBody }
-    IfBody = { (":" ~ Expr+ ~ ("end" | Else)) | Expr ~ Else? }
+
+    IfBody = { IfBlockBody | IfSimpleBody }
+
+    IfBlockBody = { ":" ~ Expr+ ~ ("end" | Else) }
+
+    IfSimpleBody = { Expr ~ Else? }
+
     Else = { "else" ~ IfBody }
 
 // Tokens
