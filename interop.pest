@@ -1,26 +1,14 @@
-Grammar = { SOI ~ NEWLINE* ~ Expr* ~ NEWLINE* ~ EOI }
+Grammar = { SOI ~ Expr* ~ EOI }
 
 // "1" is a bogus expression for now to play  with
-SimpleExpr = { "1" }
+SimpleExpr = { "1" | "(" ~ Expr ~ ")" }
 
-Expr = { SimpleExpr | IfBlock }
+Expr = { SimpleExpr | IfExpr }
 
-IfBlock = { If ~ SimpleExpr ~ Block }
-
-Block = { Colon ~ NEWLINE* ~ PEEK_ALL ~ PUSH(Indent*) ~ Expr? ~ NEWLINE* ~ (End ~ DROP? | DROP ~ End?) }
+IfExpr = { "if" ~ SimpleExpr ~ "then" ~ IfBody }
+    IfBody = { (":" ~ Expr+ ~ ("end" | Else)) | Expr ~ Else? }
+    Else = { "else" ~ IfBody }
 
 // Tokens
 
-Indent = { " "{4} }
-
-Space = { " " }
-
-Colon = { ":" }
-
-// Keywords
-
-If = { "if" }
-
-End = { "end" }
-
-WHITESPACE = _{ " " | "\t" }
+WHITESPACE = _{ " " | "\t" | "\n" | "\r\n" }
