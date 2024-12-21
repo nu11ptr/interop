@@ -1,19 +1,19 @@
-Grammar = { SOI ~ Expr* ~ EOI }
+grammar = { SOI ~ expr* ~ EOI }
 
 // "1" is a bogus expression for now to play  with
-SimpleExpr = { "1" | "(" ~ Expr ~ ")" }
+simple_expr = { "1" | "(" ~ expr~ ")" }
 
-Expr = { SimpleExpr | IfExpr }
+expr = { simple_expr | if_expr }
 
-IfExpr = { "if" ~ SimpleExpr ~ "then" ~ IfBody }
+if_expr = { "if" ~ simple_expr ~ "then" ~ if_body }
 
-    IfBody = { IfBlockBody | IfSimpleBody }
+    if_body = { if_block_body | if_simple_body }
 
-    IfBlockBody = { ":" ~ Expr+ ~ ("end" | Else) }
+    if_block_body = { ":" ~ expr+ ~ ("end" | else) }
 
-    IfSimpleBody = { Expr ~ Else? }
+    if_simple_body = { (if_expr | simple_expr) ~ else? }
 
-    Else = { "else" ~ IfBody }
+    else = { "else" ~ if_body }
 
 // Tokens
 
