@@ -11,5 +11,8 @@ fn main() {
     let src = fs::read_to_string(filename).unwrap();
     let parse = InteropParser::parse(Rule::grammar, &src);
 
-    println!("{:#?}", parse);
+    match parse {
+        Ok(pairs) => println!("{pairs:#?}"),
+        Err(e) => println!("Parsing failed: {e}"),
+    }
 }

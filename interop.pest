@@ -1,19 +1,36 @@
-grammar = { SOI ~ expr* ~ EOI }
+grammar = { SOI ~ func_decl* ~ EOI }
+
+func_decl = { "func" ~ ident ~ "(" ~ func_args? ~ ")" ~ func_tail }
+
+func_args = { func_arg ~ ("," ~ func_arg)* ~ ","? }
+
+func_arg = { ident ~ ("," ~ ident)* ~ ":" ~ type ~ ("=" ~ simple_expr)? }
+
+func_tail = { func_arrow | func_body | simple_expr }
+
+// Might need positive lookahead here to disambiguate between type and simple_expr?
+func_arrow = { "->" ~ (&(type ~ ":") ~ type ~ func_body | simple_expr) }
+
+func_body = { ":" ~ (!"end" ~ expr)+ ~ "end" }
+
+ident = { ("_" | ASCII_ALPHA) ~ ("_" | ASCII_ALPHA | ASCII_DIGIT)* }
+
+type = { ident }
 
 // "1" is a bogus expression for now to play  with
-simple_expr = { "1" | "(" ~ expr~ ")" }
+simple_expr = { "1" | ident | "(" ~ expr ~ ")" }
 
 expr = { simple_expr | if_expr }
 
 if_expr = { "if" ~ simple_expr ~ "then" ~ if_body }
 
-    if_body = { if_block_body | if_simple_body }
+if_body = { if_block_body | if_simple_body }
 
-    if_block_body = { ":" ~ expr+ ~ ("end" | else) }
+if_block_body = { ":" ~ (!("end" | "else") ~ expr)+ ~ ("end" | else) }
 
-    if_simple_body = { (if_expr | simple_expr) ~ else? }
+if_simple_body = { (if_expr | simple_expr) ~ else? }
 
-    else = { "else" ~ if_body }
+else = { "else" ~ if_body }
 
 // Tokens
 
