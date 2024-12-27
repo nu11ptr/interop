@@ -1,37 +1,92 @@
 grammar = { SOI ~ func_decl* ~ EOI }
 
-func_decl = { "func" ~ ident ~ "(" ~ func_args? ~ ")" ~ func_tail }
+func_decl = { FUNC ~ IDENT ~ L_PAREN ~ func_args? ~ R_PAREN ~ func_tail }
 
-func_args = { func_arg ~ ("," ~ func_arg)* ~ ","? }
+func_args = { func_arg ~ (COMMA ~ func_arg)* ~ COMMA? }
 
-func_arg = { ident ~ ("," ~ ident)* ~ ":" ~ type ~ ("=" ~ simple_expr)? }
+func_arg = { IDENT ~ (COMMA ~ IDENT)* ~ COLON ~ type ~ (ASSIGN ~ simple_expr)? }
 
-func_tail = { func_arrow | func_body | simple_expr }
+func_tail = { func_arrow | last_block | simple_expr }
 
 // Might need positive lookahead here to disambiguate between type and simple_expr?
-func_arrow = { "->" ~ (&(type ~ ":") ~ type ~ func_body | simple_expr) }
+func_arrow = { R_ARROW ~ (&(type ~ COLON) ~ type ~ last_block | simple_expr) }
 
-func_body = { ":" ~ (!"end" ~ expr)+ ~ "end" }
-
-ident = { ("_" | ASCII_ALPHA) ~ ("_" | ASCII_ALPHA | ASCII_DIGIT)* }
-
-type = { ident }
+type = { IDENT }
 
 // "1" is a bogus expression for now to play  with
-simple_expr = { "1" | ident | "(" ~ expr ~ ")" }
+simple_expr = { "1" | IDENT | L_PAREN ~ expr ~ R_PAREN }
 
-expr = { simple_expr | if_expr }
+expr = { if_expr | simple_expr }
 
-if_expr = { "if" ~ simple_expr ~ "then" ~ if_body }
+// *** Block ***
+
+expr_line = ${ expr ~ SPACE_TAB* ~ SEMI }
+
+block_start = { COLON ~ expr_line }
+
+last_block = { block_start ~ last_block_expr* ~ END }
+
+last_block_expr = { !END ~ expr_line }
+
+maybe_last_block = { block_start ~ maybe_last_block_expr* ~ (END | ELSE) }
+
+maybe_last_block_expr = { !(END | ELSE) ~ expr_line }
+
+// *** If ***
+
+if_expr = { IF ~ simple_expr }
+//if_expr = { IF ~ simple_expr ~ THEN ~ if_body }
 
 if_body = { if_block_body | if_simple_body }
 
-if_block_body = { ":" ~ (!("end" | "else") ~ expr)+ ~ ("end" | else) }
+// We can't use maybe_last_block here because we need to hook into 'else' rule below
+if_block_body = { block_start ~ maybe_last_block_expr* ~ (END | else) }
 
+// Special case the if expression to allow chaining (since not a simple expression)
 if_simple_body = { (if_expr | simple_expr) ~ else? }
 
-else = { "else" ~ if_body }
+else = { ELSE ~ if_body }
 
 // Tokens
 
-WHITESPACE = _{ " " | "\t" | "\n" | "\r\n" }
+IDENT = @{ (UNDERSCORE | ASCII_ALPHA) ~ (UNDERSCORE | ASCII_ALPHA | ASCII_DIGIT)* }
+
+UNDERSCORE = @{ "_" }
+
+L_PAREN = @{ "(" }
+
+R_PAREN = @{ ")" }
+
+COLON = @{ ":" }
+
+COMMA = @{ "," }
+
+ASSIGN = @{ "=" }
+
+R_ARROW = @{ "->" }
+
+MAYBE_SEMI = @{ CRLF ~ WHITESPACE* ~ ";"? }
+
+SEMI = @{ MAYBE_SEMI | ";" }
+
+// Keywords
+
+FUNC = @{ "func" ~ &WHITESPACE+ }
+
+IF = @{ "if" ~ &WHITESPACE+ }
+
+THEN = @{ "then" ~ &WHITESPACE+ }
+
+// A true else will be followed immediately by whitespace OR a colon (not consumed)
+ELSE = @{ "else" ~ &(WHITESPACE+ | ":") }
+
+// A true end will always be followed by whitespace
+END = @{ "end" ~ &(WHITESPACE+ | EOI) }
+
+// Whitespace
+
+SPACE_TAB = _{ " " | "\t" }
+
+CRLF = _{ "\n" | "\r\n" }
+
+WHITESPACE = _{ SPACE_TAB | CRLF }
