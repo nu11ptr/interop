@@ -1,4 +1,4 @@
-use std::{convert::Infallible, mem, str::CharIndices};
+use std::{collections::HashMap, convert::Infallible, mem, str::CharIndices};
 
 pub struct Token {
     pub token_type: TokenType,
@@ -50,21 +50,32 @@ impl Token {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TokenType {
+    // Input markers
     StartOfInput,
     EndOfInput,
 
     Comment,
 
+    // Expression literals
+    Ident,
     Number,
 
+    // Various symbols
     LeftParen,
     RightParen,
     Semi,
 
+    // Math operators
     Multiply,
     Divide,
     Add,
     Subtract,
+
+    // Keywords
+    End,
+    If,
+    Then,
+    Else,
 
     UnknownTokenType,
 }
@@ -73,18 +84,34 @@ pub type LalrpopToken = Result<(u32, TokenType, u32), Infallible>;
 
 pub struct Lexer<'input> {
     incl_comments: bool,
-    chars: CharIndices<'input>,
+    input: &'input str,
+    char_iter: CharIndices<'input>,
     curr_char: Option<(usize, char)>,
     last_token: Option<TokenType>,
+    keywords: HashMap<&'static str, TokenType>,
 }
 
 impl<'input> Lexer<'input> {
+    const END: &'static str = "end";
+
+    const IF: &'static str = "if";
+    const THEN: &'static str = "then";
+    const ELSE: &'static str = "else";
+
     pub fn new(input: &'input str, incl_comments: bool) -> Self {
+        let mut keywords = HashMap::with_capacity(4);
+        keywords.insert(Self::END, TokenType::End);
+        keywords.insert(Self::IF, TokenType::If);
+        keywords.insert(Self::THEN, TokenType::Then);
+        keywords.insert(Self::ELSE, TokenType::Else);
+
         Self {
             incl_comments,
-            chars: input.char_indices(),
+            input,
+            char_iter: input.char_indices(),
             curr_char: None,
             last_token: None,
+            keywords,
         }
     }
 
@@ -102,37 +129,15 @@ impl<'input> Lexer<'input> {
         if self.curr_char.is_some() {
             mem::take(&mut self.curr_char)
         } else {
-            self.chars.next()
+            self.char_iter.next()
         }
-    }
-
-    fn scan_number(&mut self, start_idx: usize) -> Option<LalrpopToken> {
-        let mut len = 1;
-
-        loop {
-            match self.chars.next() {
-                Some((idx, char)) => match char {
-                    '0'..='9' => len += 1,
-                    // If not a valid digit then don't consume and we are done
-                    _ => {
-                        // Save this since not processed yet
-                        self.curr_char = Some((idx, char));
-                        break;
-                    }
-                },
-                // EOI
-                None => break,
-            }
-        }
-
-        self.emit_token(TokenType::Number, start_idx, len)
     }
 
     fn scan_comment(&mut self, start_idx: usize) -> Option<LalrpopToken> {
         let mut len = 1;
 
         loop {
-            match self.chars.next() {
+            match self.char_iter.next() {
                 // End of comment - for now, we don't include the newline
                 Some((idx, '\n')) => {
                     // Save this since not processed yet
@@ -156,6 +161,58 @@ impl<'input> Lexer<'input> {
             )))
         } else {
             None
+        }
+    }
+
+    fn scan_number(&mut self, start_idx: usize) -> Option<LalrpopToken> {
+        let mut len = 1;
+
+        loop {
+            match self.char_iter.next() {
+                Some((idx, char)) => match char {
+                    '0'..='9' => len += 1,
+                    // If not a valid digit then don't consume and we are done
+                    _ => {
+                        // Save this since not processed yet
+                        self.curr_char = Some((idx, char));
+                        break;
+                    }
+                },
+                // EOI
+                None => break,
+            }
+        }
+
+        self.emit_token(TokenType::Number, start_idx, len)
+    }
+
+    fn scan_ident_or_keyword(&mut self, start_idx: usize) -> Option<LalrpopToken> {
+        let mut len = 1;
+
+        loop {
+            match self.char_iter.next() {
+                // Underscore
+                Some((_, '_')) => len += 1,
+                // Alpha numberic
+                // TODO: Since this matches ALL letters before numbers... it might
+                // be slower than necessary for numbers. Pull out ASCII checking first?
+                Some((_, char)) if char.is_alphanumeric() => len += 1,
+                // Not valid ident char
+                Some((idx, char)) => {
+                    // Save this since not processed yet
+                    self.curr_char = Some((idx, char));
+                    break;
+                }
+                // EOI
+                None => break,
+            }
+        }
+
+        let ident = &self.input[start_idx..start_idx + len];
+
+        match self.keywords.get(ident) {
+            Some(token_type) => self.emit_token(*token_type, start_idx, len),
+            None => self.emit_token(TokenType::Ident, start_idx, len),
         }
     }
 }
@@ -186,7 +243,9 @@ impl<'input> Iterator for Lexer<'input> {
                         '\n' => {
                             match self.last_token {
                                 // If we ended with a special token, emit a semicolon
-                                Some(TokenType::Number | TokenType::RightParen) => {
+                                Some(
+                                    TokenType::Ident | TokenType::Number | TokenType::RightParen,
+                                ) => {
                                     // Semicolon actual token can be ';' OR '\n'
                                     self.emit_token(TokenType::Semi, idx, 1)
                                 }
@@ -203,6 +262,10 @@ impl<'input> Iterator for Lexer<'input> {
                         '-' => self.emit_token(TokenType::Subtract, idx, 1),
                         // Start of integer literal
                         '1'..='9' => self.scan_number(idx),
+                        // Next two are start of keyword or identifier
+                        '_' => self.scan_ident_or_keyword(idx),
+                        // NOTE: This is last because if not ASCII, it might be slow determining if unicode alpha
+                        _ if char.is_alphabetic() => self.scan_ident_or_keyword(idx),
                         _ => self.emit_token(TokenType::UnknownTokenType, idx, char.len_utf8()),
                     };
                 }
@@ -228,6 +291,9 @@ mod test {
 
     # This is another comment
     - 9 ;
+
+    if then ifs else end
+    _this_IS_an_Id3NT
 ";
 
     #[test]
@@ -269,6 +335,16 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((80, TokenType::Subtract, 81))));
         assert_eq!(lexer.next(), Some(Ok((82, TokenType::Number, 83))));
         assert_eq!(lexer.next(), Some(Ok((84, TokenType::Semi, 85))));
+
+        assert_eq!(lexer.next(), Some(Ok((91, TokenType::If, 93))));
+        assert_eq!(lexer.next(), Some(Ok((94, TokenType::Then, 98))));
+        assert_eq!(lexer.next(), Some(Ok((99, TokenType::Ident, 102))));
+        assert_eq!(lexer.next(), Some(Ok((103, TokenType::Else, 107))));
+        assert_eq!(lexer.next(), Some(Ok((108, TokenType::End, 111))));
+
+        assert_eq!(lexer.next(), Some(Ok((116, TokenType::Ident, 133))));
+        // Special semi due to line ending in identifier
+        assert_eq!(lexer.next(), Some(Ok((133, TokenType::Semi, 134))));
 
         assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
         assert_eq!(lexer.next(), None);
