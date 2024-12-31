@@ -145,7 +145,7 @@ impl<'input> Lexer<'input> {
                     break;
                 }
                 // Valid comment char
-                Some(_) => len += 1,
+                Some((_, char)) => len += char.len_utf8(),
                 // EOI
                 None => break,
             }
@@ -170,6 +170,7 @@ impl<'input> Lexer<'input> {
         loop {
             match self.char_iter.next() {
                 Some((idx, char)) => match char {
+                    // ASCII digits - always length of 1
                     '0'..='9' => len += 1,
                     // If not a valid digit then don't consume and we are done
                     _ => {
@@ -191,12 +192,12 @@ impl<'input> Lexer<'input> {
 
         loop {
             match self.char_iter.next() {
-                // Underscore
+                // Underscore - always length of 1
                 Some((_, '_')) => len += 1,
                 // Alpha numberic
                 // TODO: Since this matches ALL letters before numbers... it might
                 // be slower than necessary for numbers. Pull out ASCII checking first?
-                Some((_, char)) if char.is_alphanumeric() => len += 1,
+                Some((_, char)) if char.is_alphanumeric() => len += char.len_utf8(),
                 // Not valid ident char
                 Some((idx, char)) => {
                     // Save this since not processed yet
@@ -293,7 +294,7 @@ mod test {
     - 9 ;
 
     if then ifs else end
-    _this_IS_an_Id3NT
+    _this_IS_an_Iß3NT
 ";
 
     #[test]
@@ -342,9 +343,9 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((103, TokenType::Else, 107))));
         assert_eq!(lexer.next(), Some(Ok((108, TokenType::End, 111))));
 
-        assert_eq!(lexer.next(), Some(Ok((116, TokenType::Ident, 133))));
+        assert_eq!(lexer.next(), Some(Ok((116, TokenType::Ident, 134))));
         // Special semi due to line ending in identifier
-        assert_eq!(lexer.next(), Some(Ok((133, TokenType::Semi, 134))));
+        assert_eq!(lexer.next(), Some(Ok((134, TokenType::Semi, 135))));
 
         assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
         assert_eq!(lexer.next(), None);
