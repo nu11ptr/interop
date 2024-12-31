@@ -1,31 +1,18 @@
-use std::{convert::Infallible, iter::Peekable, str::CharIndices};
+use std::{convert::Infallible, mem, str::CharIndices};
 
-// TODO: I really want this instead:
-//
-// enum TokenType {
-//     IntegerLit,
-//     ...,
-//     Multiply,
-// }
-//
-// struct Token {
-//     token_type: TokenType,
-//     start: u32,
-//     end: u32,
-// }
-//
-// But LALRPOP doesn't support this yet: https://github.com/lalrpop/lalrpop/issues/861
-//
-// I could just return the tuple with token type and construct the full tokens in the AST, but that's a bit weird.
-
-pub struct Location {
+pub struct Token {
+    pub token_type: TokenType,
     start: u32,
     end: u32,
 }
 
-impl Location {
-    pub fn new(start: u32, end: u32) -> Self {
-        Self { start, end }
+impl Token {
+    pub fn new(token_type: TokenType, start: u32, end: u32) -> Self {
+        Self {
+            token_type,
+            start,
+            end,
+        }
     }
 
     pub fn as_str_slice<'input>(&self, input: &'input str) -> &'input str {
@@ -61,44 +48,6 @@ impl Location {
     }
 }
 
-pub enum Token {
-    IntegerLit(Location),
-
-    LeftParen(Location),
-    RightParen(Location),
-
-    Multiply(Location),
-    Divide(Location),
-    Add(Location),
-    Subtract(Location),
-}
-
-impl Token {
-    fn location(&self) -> &Location {
-        match self {
-            Token::IntegerLit(location) => location,
-            Token::LeftParen(location) => location,
-            Token::RightParen(location) => location,
-            Token::Multiply(location) => location,
-            Token::Divide(location) => location,
-            Token::Add(location) => location,
-            Token::Subtract(location) => location,
-        }
-    }
-
-    pub fn as_str_slice<'input>(&self, input: &'input str) -> &'input str {
-        self.location().as_str_slice(input)
-    }
-
-    pub fn start_row_col(&self, input: &str) -> (u32, u32) {
-        self.location().start_row_col(input)
-    }
-
-    pub fn end_row_col(&self, input: &str) -> (u32, u32) {
-        self.location().end_row_col(input)
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TokenType {
     StartOfInput,
@@ -115,22 +64,22 @@ pub enum TokenType {
     Add,
     Subtract,
 
-    UnknownType,
+    UnknownTokenType,
 }
 
-pub struct LexerError;
-
-pub type LexerItem = Result<(u32, TokenType, u32), Infallible>;
+pub type LalrpopToken = Result<(u32, TokenType, u32), Infallible>;
 
 pub struct Lexer<'input> {
-    chars: Peekable<CharIndices<'input>>,
+    chars: CharIndices<'input>,
+    curr_char: Option<(usize, char)>,
     last_token: Option<TokenType>,
 }
 
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
         Self {
-            chars: input.char_indices().peekable(),
+            chars: input.char_indices(),
+            curr_char: None,
             last_token: None,
         }
     }
@@ -140,24 +89,32 @@ impl<'input> Lexer<'input> {
         token_type: TokenType,
         start_idx: usize,
         len: usize,
-    ) -> Option<LexerItem> {
+    ) -> Option<LalrpopToken> {
         self.last_token = Some(token_type);
         Some(Ok((start_idx as u32, token_type, (start_idx + len) as u32)))
     }
 
-    fn make_number(&mut self, start_idx: usize) -> Option<LexerItem> {
+    fn next_char(&mut self) -> Option<(usize, char)> {
+        if self.curr_char.is_some() {
+            mem::take(&mut self.curr_char)
+        } else {
+            self.chars.next()
+        }
+    }
+
+    fn make_number(&mut self, start_idx: usize) -> Option<LalrpopToken> {
         let mut len = 1;
 
         loop {
-            match self.chars.peek() {
-                Some((_, char)) => match *char {
-                    '0'..='9' => {
-                        // If this is a valid digit then consume the char
-                        self.chars.next();
-                        len += 1
-                    }
+            match self.chars.next() {
+                Some((idx, char)) => match char {
+                    '0'..='9' => len += 1,
                     // If not a valid digit then don't consume and we are done
-                    _ => break,
+                    _ => {
+                        // Save this since not processed yet
+                        self.curr_char = Some((idx, char));
+                        break;
+                    }
                 },
                 None => break,
             }
@@ -168,7 +125,7 @@ impl<'input> Lexer<'input> {
 }
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = LexerItem;
+    type Item = LalrpopToken;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.last_token.is_none() {
@@ -177,7 +134,7 @@ impl<'input> Iterator for Lexer<'input> {
         }
 
         loop {
-            match self.chars.next() {
+            match self.next_char() {
                 Some((idx, char)) => {
                     return match char {
                         // TODO: Should we match other unicode whitespace chars?
@@ -203,7 +160,7 @@ impl<'input> Iterator for Lexer<'input> {
                         '-' => self.emit_token(TokenType::Subtract, idx, 1),
                         // Start of integer literal
                         '1'..='9' => self.make_number(idx),
-                        _ => self.emit_token(TokenType::UnknownType, idx, char.len_utf8()),
+                        _ => self.emit_token(TokenType::UnknownTokenType, idx, char.len_utf8()),
                     };
                 }
                 // EOF - output EOI token just once
