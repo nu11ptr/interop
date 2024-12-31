@@ -53,6 +53,8 @@ pub enum TokenType {
     StartOfInput,
     EndOfInput,
 
+    Comment,
+
     Number,
 
     LeftParen,
@@ -70,14 +72,16 @@ pub enum TokenType {
 pub type LalrpopToken = Result<(u32, TokenType, u32), Infallible>;
 
 pub struct Lexer<'input> {
+    incl_comments: bool,
     chars: CharIndices<'input>,
     curr_char: Option<(usize, char)>,
     last_token: Option<TokenType>,
 }
 
 impl<'input> Lexer<'input> {
-    pub fn new(input: &'input str) -> Self {
+    pub fn new(input: &'input str, incl_comments: bool) -> Self {
         Self {
+            incl_comments,
             chars: input.char_indices(),
             curr_char: None,
             last_token: None,
@@ -102,7 +106,7 @@ impl<'input> Lexer<'input> {
         }
     }
 
-    fn make_number(&mut self, start_idx: usize) -> Option<LalrpopToken> {
+    fn scan_number(&mut self, start_idx: usize) -> Option<LalrpopToken> {
         let mut len = 1;
 
         loop {
@@ -116,11 +120,43 @@ impl<'input> Lexer<'input> {
                         break;
                     }
                 },
+                // EOI
                 None => break,
             }
         }
 
         self.emit_token(TokenType::Number, start_idx, len)
+    }
+
+    fn scan_comment(&mut self, start_idx: usize) -> Option<LalrpopToken> {
+        let mut len = 1;
+
+        loop {
+            match self.chars.next() {
+                // End of comment - for now, we don't include the newline
+                Some((idx, '\n')) => {
+                    // Save this since not processed yet
+                    self.curr_char = Some((idx, '\n'));
+                    break;
+                }
+                // Valid comment char
+                Some(_) => len += 1,
+                // EOI
+                None => break,
+            }
+        }
+
+        // Even if we are including comments, we don't save it as our last token so
+        // new line semi colon logic works correctly
+        if self.incl_comments {
+            Some(Ok((
+                start_idx as u32,
+                TokenType::Comment,
+                (start_idx + len) as u32,
+            )))
+        } else {
+            None
+        }
     }
 }
 
@@ -137,6 +173,13 @@ impl<'input> Iterator for Lexer<'input> {
             match self.next_char() {
                 Some((idx, char)) => {
                     return match char {
+                        '#' => {
+                            // If comments aren't included then skip
+                            match self.scan_comment(idx) {
+                                token @ Some(_) => token,
+                                None => continue,
+                            }
+                        }
                         // TODO: Should we match other unicode whitespace chars?
                         // Whitespace
                         '\t' | ' ' | '\r' => continue,
@@ -159,7 +202,7 @@ impl<'input> Iterator for Lexer<'input> {
                         '+' => self.emit_token(TokenType::Add, idx, 1),
                         '-' => self.emit_token(TokenType::Subtract, idx, 1),
                         // Start of integer literal
-                        '1'..='9' => self.make_number(idx),
+                        '1'..='9' => self.scan_number(idx),
                         _ => self.emit_token(TokenType::UnknownTokenType, idx, char.len_utf8()),
                     };
                 }
@@ -181,12 +224,24 @@ mod test {
     use super::{Lexer, TokenType};
 
     const INPUT: &str = r" 123;(45)
-    6 * 7 +  8 
-    - 9 ";
+    6 * 7 +  8 # This is a comment
+
+    # This is another comment
+    - 9 ;
+";
 
     #[test]
-    fn test_lexer() {
-        let mut lexer = Lexer::new(INPUT);
+    fn test_lexer_no_comments() {
+        test_lexer(false);
+    }
+
+    #[test]
+    fn test_lexer_incl_comments() {
+        test_lexer(true);
+    }
+
+    fn test_lexer(incl_comments: bool) {
+        let mut lexer = Lexer::new(INPUT, incl_comments);
         assert_eq!(lexer.next(), Some(Ok((0, TokenType::StartOfInput, 0))));
 
         assert_eq!(lexer.next(), Some(Ok((1, TokenType::Number, 4))));
@@ -202,11 +257,18 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((18, TokenType::Number, 19))));
         assert_eq!(lexer.next(), Some(Ok((20, TokenType::Add, 21))));
         assert_eq!(lexer.next(), Some(Ok((23, TokenType::Number, 24))));
+        if incl_comments {
+            assert_eq!(lexer.next(), Some(Ok((25, TokenType::Comment, 44))));
+        }
         // Special semi due to line ending in number (there is a space after the 8)
-        assert_eq!(lexer.next(), Some(Ok((25, TokenType::Semi, 26))));
+        assert_eq!(lexer.next(), Some(Ok((44, TokenType::Semi, 45))));
 
-        assert_eq!(lexer.next(), Some(Ok((30, TokenType::Subtract, 31))));
-        assert_eq!(lexer.next(), Some(Ok((32, TokenType::Number, 33))));
+        if incl_comments {
+            assert_eq!(lexer.next(), Some(Ok((50, TokenType::Comment, 75))));
+        }
+        assert_eq!(lexer.next(), Some(Ok((80, TokenType::Subtract, 81))));
+        assert_eq!(lexer.next(), Some(Ok((82, TokenType::Number, 83))));
+        assert_eq!(lexer.next(), Some(Ok((84, TokenType::Semi, 85))));
 
         assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
         assert_eq!(lexer.next(), None);
