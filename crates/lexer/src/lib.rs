@@ -64,6 +64,10 @@ pub enum TokenType {
     LeftParen,
     RightParen,
     Semi,
+    Colon,
+    Equals,
+    Comma,
+    RArrow,
 
     // Math operators
     Multiply,
@@ -72,6 +76,7 @@ pub enum TokenType {
     Subtract,
 
     // Keywords
+    Func,
     End,
     If,
     Then,
@@ -92,6 +97,7 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    const FUNC: &'static str = "func";
     const END: &'static str = "end";
 
     const IF: &'static str = "if";
@@ -99,7 +105,8 @@ impl<'input> Lexer<'input> {
     const ELSE: &'static str = "else";
 
     pub fn new(input: &'input str, incl_comments: bool) -> Self {
-        let mut keywords = HashMap::with_capacity(4);
+        let mut keywords = HashMap::with_capacity(5);
+        keywords.insert(Self::FUNC, TokenType::Func);
         keywords.insert(Self::END, TokenType::End);
         keywords.insert(Self::IF, TokenType::If);
         keywords.insert(Self::THEN, TokenType::Then);
@@ -187,8 +194,12 @@ impl<'input> Lexer<'input> {
         self.emit_token(TokenType::Number, start_idx, len)
     }
 
-    fn scan_ident_or_keyword(&mut self, start_idx: usize) -> Option<LalrpopToken> {
-        let mut len = 1;
+    fn scan_ident_or_keyword(
+        &mut self,
+        start_idx: usize,
+        start_len: usize,
+    ) -> Option<LalrpopToken> {
+        let mut len = start_len;
 
         loop {
             match self.char_iter.next() {
@@ -254,19 +265,35 @@ impl<'input> Iterator for Lexer<'input> {
                                 Some(_) | None => continue,
                             }
                         }
+                        ':' => self.emit_token(TokenType::Colon, idx, 1),
+                        '=' => self.emit_token(TokenType::Equals, idx, 1),
+                        ',' => self.emit_token(TokenType::Comma, idx, 1),
+                        '→' => self.emit_token(TokenType::RArrow, idx, '→'.len_utf8()),
                         ';' => self.emit_token(TokenType::Semi, idx, 1),
                         '(' => self.emit_token(TokenType::LeftParen, idx, 1),
                         ')' => self.emit_token(TokenType::RightParen, idx, 1),
                         '*' => self.emit_token(TokenType::Multiply, idx, 1),
                         '/' => self.emit_token(TokenType::Divide, idx, 1),
                         '+' => self.emit_token(TokenType::Add, idx, 1),
-                        '-' => self.emit_token(TokenType::Subtract, idx, 1),
+                        // Handle subtraction and right arrow disambiguation
+                        '-' => match self.char_iter.next() {
+                            Some((_, '>')) => self.emit_token(TokenType::RArrow, idx, 2),
+                            Some((next_idx, char)) => {
+                                // Save this since not processed yet
+                                self.curr_char = Some((next_idx, char));
+                                self.emit_token(TokenType::Subtract, idx, 1)
+                            }
+                            // EOI
+                            None => self.emit_token(TokenType::Subtract, idx, 1),
+                        },
                         // Start of integer literal
                         '1'..='9' => self.scan_number(idx),
                         // Next two are start of keyword or identifier
-                        '_' => self.scan_ident_or_keyword(idx),
+                        '_' => self.scan_ident_or_keyword(idx, 1),
                         // NOTE: This is last because if not ASCII, it might be slow determining if unicode alpha
-                        _ if char.is_alphabetic() => self.scan_ident_or_keyword(idx),
+                        _ if char.is_alphabetic() => {
+                            self.scan_ident_or_keyword(idx, char.len_utf8())
+                        }
                         _ => self.emit_token(TokenType::UnknownTokenType, idx, char.len_utf8()),
                     };
                 }
@@ -295,6 +322,8 @@ mod test {
 
     if then ifs else end
     _this_IS_an_Iß3NT
+
+    func,:=->→
 ";
 
     #[test]
@@ -346,6 +375,15 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((116, TokenType::Ident, 134))));
         // Special semi due to line ending in identifier
         assert_eq!(lexer.next(), Some(Ok((134, TokenType::Semi, 135))));
+
+        assert_eq!(lexer.next(), Some(Ok((140, TokenType::Func, 144))));
+        assert_eq!(lexer.next(), Some(Ok((144, TokenType::Comma, 145))));
+        assert_eq!(lexer.next(), Some(Ok((145, TokenType::Colon, 146))));
+        assert_eq!(lexer.next(), Some(Ok((146, TokenType::Equals, 147))));
+        // ASCII right arrow
+        assert_eq!(lexer.next(), Some(Ok((147, TokenType::RArrow, 149))));
+        // Unicode  right arrow
+        assert_eq!(lexer.next(), Some(Ok((149, TokenType::RArrow, 152))));
 
         assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
         assert_eq!(lexer.next(), None);
