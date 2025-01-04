@@ -43,7 +43,7 @@ Sep<T, C>: Vec<T> = {
 // *** Top level ***
 
 pub File: Vec<Decl<'input>> = {
-    SOI <Decl*> EOI
+    SOI <Sep<Decl, ";">> EOI
 };
 
 Decl: Decl<'input> = {
@@ -81,7 +81,8 @@ Type: Type<'input> = {
 // *** Expressions ***
 
 Expr: Expr<'input> = {
-    SimpleExpr => Expr::Simple(<>)
+    SimpleExpr => Expr::Simple(<>),
+    FuncDecl => Expr::Func(<>),
 };
 
 SimpleExpr: SimpleExpr<'input> = {
@@ -126,7 +127,7 @@ FuncArgs: Vec<FuncArg<'input>> = {
 
 FuncBody: FuncBody<'input> = {
     <ret_type: ("->" <Type>)?> <block: LastBlock> => FuncBody::Block(ret_type, block),
-    "->"? <SimpleExpr> ";" => FuncBody::Expr(<>),
+    "->"? <SimpleExpr> => FuncBody::Expr(<>),
 };
 
 FuncDecl: FuncDecl<'input> = {

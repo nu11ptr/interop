@@ -22,7 +22,8 @@ end
 
 # Style 2 - return type Unit
 func my_func2():
-    println
+    func my_func5() println
+    123
 end
 
 # Style 3 - return type Int

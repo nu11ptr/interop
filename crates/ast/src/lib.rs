@@ -33,6 +33,7 @@ pub enum SimpleExpr<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expr<'input> {
     If(If<'input>),
+    Func(FuncDecl<'input>),
     Simple(SimpleExpr<'input>),
 }
 

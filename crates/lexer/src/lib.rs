@@ -304,7 +304,10 @@ impl<'input> Iterator for Lexer<'input> {
                             match self.last_token {
                                 // If we ended with a special token, emit a semicolon
                                 Some(
-                                    TokenType::Ident | TokenType::Number | TokenType::RightParen,
+                                    TokenType::Ident
+                                    | TokenType::Number
+                                    | TokenType::RightParen
+                                    | TokenType::End,
                                 ) => {
                                     // Semicolon actual token can be ';' OR '\n'
                                     self.emit_token(TokenType::Semi, idx, 1)
@@ -432,6 +435,7 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((99, TokenType::Ident, 102))));
         assert_eq!(lexer.next(), Some(Ok((103, TokenType::Else, 107))));
         assert_eq!(lexer.next(), Some(Ok((108, TokenType::End, 111))));
+        assert_eq!(lexer.next(), Some(Ok((111, TokenType::Semi, 112))));
 
         assert_eq!(lexer.next(), Some(Ok((116, TokenType::Ident, 134))));
         // Special semi due to line ending in identifier
