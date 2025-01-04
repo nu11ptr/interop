@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use ast::*;
 use lexer::TokenType;
 
@@ -40,16 +42,16 @@ Sep<T, C>: Vec<T> = {
 
 // *** Top level ***
 
-pub File: Vec<Decl> = SOI <decls: Decl*> EOI => decls;
+pub File: Vec<Decl<'input>> = SOI <decls: Decl*> EOI => decls;
 
-Decl: Decl = {
+Decl: Decl<'input> = {
     FuncDecl => Decl::Func(<>)
 };
 
 // *** Basic Non-terminals ***
 
-Ident: Ident = <start: @L> IDENT <end: @R> => {
-    Ident { name: input[start as usize..end as usize].to_string() }
+Ident: Ident<'input> = <start: @L> IDENT <end: @R> => {
+    Ident { name: Cow::Borrowed(&input[start as usize..end as usize]) }
 };
 
 IntLit: IntLit = <start: @L> NUMBER_LIT <end: @R> =>? {
@@ -63,17 +65,17 @@ IntLit: IntLit = <start: @L> NUMBER_LIT <end: @R> =>? {
 
 // *** Types ***
 
-Type: Type = {
+Type: Type<'input> = {
     Ident => Type::Simple(<>),
 };
 
 // *** Expressions ***
 
-Expr: Expr = {
+Expr: Expr<'input> = {
     SimpleExpr => Expr::Simple(<>)
 };
 
-SimpleExpr: SimpleExpr = {
+SimpleExpr: SimpleExpr<'input> = {
     Ident => SimpleExpr::Ident(<>),
     IntLit => SimpleExpr::IntLit(<>),
     "(" <e:Expr> ")" => SimpleExpr::Expr(Box::new(e)),
@@ -81,14 +83,14 @@ SimpleExpr: SimpleExpr = {
 
 // *** Blocks ***
 
-LastBlock: Block = {
+LastBlock: Block<'input> = {
     ":" <expr: Sep<Expr, ";">> <else_or_end: "end"> => Block {expr, else_or_end},
 };
 
 // *** Function ***
 
 // Parse a list of function arg names
-FuncArgIdents: Vec<Ident> = {
+FuncArgIdents: Vec<Ident<'input>> = {
     <arg:Ident> <args: ("," <Ident>)*> => {
         let mut v = Vec::with_capacity(args.len() + 1);
         v.push(arg);
@@ -98,7 +100,7 @@ FuncArgIdents: Vec<Ident> = {
 };
 
 // Parse a function arg duplicating type and default value to all args
-FuncArg: Vec<FuncArg> = {
+FuncArg: Vec<FuncArg<'input>> = {
     <args: FuncArgIdents> ":" <arg_type: Type> <default_val: ("=" <SimpleExpr>)?> => {
         args.into_iter().map(|name| FuncArg {
             name,
@@ -108,16 +110,16 @@ FuncArg: Vec<FuncArg> = {
     }
 };
 
-FuncArgs: Vec<FuncArg> = {
+FuncArgs: Vec<FuncArg<'input>> = {
     Sep<FuncArg, ","> => <>.into_iter().flatten().collect()
 };
 
-FuncBody: FuncBody = {
+FuncBody: FuncBody<'input> = {
     <ret_type: ("->" <Type>)?> <block: LastBlock> => FuncBody::Block(ret_type, block),
     "->"? <expr: SimpleExpr> ";" => FuncBody::Expr(expr),
 };
 
-FuncDecl: FuncDecl = "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
+FuncDecl: FuncDecl<'input> = "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
     FuncDecl {
         name,
         args,

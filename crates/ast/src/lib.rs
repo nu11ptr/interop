@@ -1,10 +1,10 @@
-use std::path::PathBuf;
+use std::{borrow::Cow, path::PathBuf};
 
 use lexer::TokenType;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Ident {
-    pub name: String,
+pub struct Ident<'input> {
+    pub name: Cow<'input, str>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -16,31 +16,31 @@ pub struct IntLit {
 
 // TODO: Flesh this out
 #[derive(Clone, Debug, PartialEq)]
-pub enum Type {
-    Simple(Ident),
+pub enum Type<'input> {
+    Simple(Ident<'input>),
 }
 
 // *** Expressions ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum SimpleExpr {
-    Ident(Ident),
+pub enum SimpleExpr<'input> {
+    Ident(Ident<'input>),
     IntLit(IntLit),
     // Expression in parens - should be rare
-    Expr(Box<Expr>),
+    Expr(Box<Expr<'input>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expr {
-    If(If),
-    Simple(SimpleExpr),
+pub enum Expr<'input> {
+    If(If<'input>),
+    Simple(SimpleExpr<'input>),
 }
 
 // *** Block ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Block {
-    pub expr: Vec<Expr>,
+pub struct Block<'input> {
+    pub expr: Vec<Expr<'input>>,
     // else or end keyword
     pub else_or_end: TokenType,
 }
@@ -48,51 +48,51 @@ pub struct Block {
 // *** Function ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FuncBody {
-    Expr(SimpleExpr),
-    Block(Option<Type>, Block),
+pub enum FuncBody<'input> {
+    Expr(SimpleExpr<'input>),
+    Block(Option<Type<'input>>, Block<'input>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FuncArg {
-    pub name: Ident,
-    pub arg_type: Type,
-    pub default_val: Option<SimpleExpr>,
+pub struct FuncArg<'input> {
+    pub name: Ident<'input>,
+    pub arg_type: Type<'input>,
+    pub default_val: Option<SimpleExpr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FuncDecl {
-    pub name: Ident,
-    pub args: Vec<FuncArg>,
-    pub body: FuncBody,
+pub struct FuncDecl<'input> {
+    pub name: Ident<'input>,
+    pub args: Vec<FuncArg<'input>>,
+    pub body: FuncBody<'input>,
 }
 
 // *** If ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum IfBody {
+pub enum IfBody<'input> {
     // Special case for "else if" since "if" is not a simple expression
-    If(Box<If>),
-    Expr(SimpleExpr),
-    Block(Block),
+    If(Box<If<'input>>),
+    Expr(SimpleExpr<'input>),
+    Block(Block<'input>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct If {
-    pub condition: SimpleExpr,
-    pub then_body: IfBody,
-    pub else_body: Option<IfBody>,
+pub struct If<'input> {
+    pub condition: SimpleExpr<'input>,
+    pub then_body: IfBody<'input>,
+    pub else_body: Option<IfBody<'input>>,
 }
 
 // *** Top level ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Decl {
-    Func(FuncDecl),
+pub enum Decl<'input> {
+    Func(FuncDecl<'input>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct File {
+pub struct File<'input> {
     pub path: PathBuf,
-    pub decls: Vec<Decl>,
+    pub decls: Vec<Decl<'input>>,
 }
