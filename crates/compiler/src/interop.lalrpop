@@ -42,7 +42,9 @@ Sep<T, C>: Vec<T> = {
 
 // *** Top level ***
 
-pub File: Vec<Decl<'input>> = SOI <decls: Decl*> EOI => decls;
+pub File: Vec<Decl<'input>> = {
+    SOI <Decl*> EOI
+};
 
 Decl: Decl<'input> = {
     FuncDecl => Decl::Func(<>)
@@ -50,17 +52,24 @@ Decl: Decl<'input> = {
 
 // *** Basic Non-terminals ***
 
-Ident: Ident<'input> = <start: @L> IDENT <end: @R> => {
-    Ident { name: Cow::Borrowed(&input[start as usize..end as usize]) }
+Ident: Ident<'input> = {
+    <start: @L> IDENT <end: @R> => {
+        Ident { 
+            name: Cow::Borrowed(&input[start as usize..end as usize]) 
+        }
+    }
 };
 
-IntLit: IntLit = <start: @L> NUMBER_LIT <end: @R> =>? {
-    input[start as usize..end as usize].parse()
-        .map(|value| IntLit { value })
-        .map_err(|_| ParseError::User {
-            error: "Integer literal is larger than 2^32"
-        }
-    )
+IntLit: IntLit = {
+    <start: @L> NUMBER_LIT <end: @R> =>? {
+        input[start as usize..end as usize]
+            .parse()
+            .map(|value| IntLit { value })
+            .map_err(|_| ParseError::User {
+                error: "Integer literal is larger than 2^32"
+            }
+        )
+    }
 };
 
 // *** Types ***
@@ -78,7 +87,7 @@ Expr: Expr<'input> = {
 SimpleExpr: SimpleExpr<'input> = {
     Ident => SimpleExpr::Ident(<>),
     IntLit => SimpleExpr::IntLit(<>),
-    "(" <e:Expr> ")" => SimpleExpr::Expr(Box::new(e)),
+    "(" <Expr> ")" => SimpleExpr::Expr(Box::new(<>)),
 };
 
 // *** Blocks ***
@@ -91,6 +100,7 @@ LastBlock: Block<'input> = {
 
 // Parse a list of function arg names
 FuncArgIdents: Vec<Ident<'input>> = {
+    // We don't want trailing comma support here
     <arg:Ident> <args: ("," <Ident>)*> => {
         let mut v = Vec::with_capacity(args.len() + 1);
         v.push(arg);
@@ -116,14 +126,16 @@ FuncArgs: Vec<FuncArg<'input>> = {
 
 FuncBody: FuncBody<'input> = {
     <ret_type: ("->" <Type>)?> <block: LastBlock> => FuncBody::Block(ret_type, block),
-    "->"? <expr: SimpleExpr> ";" => FuncBody::Expr(expr),
+    "->"? <SimpleExpr> ";" => FuncBody::Expr(<>),
 };
 
-FuncDecl: FuncDecl<'input> = "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
-    FuncDecl {
-        name,
-        args,
-        body,
+FuncDecl: FuncDecl<'input> = {
+    "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
+        FuncDecl {
+            name,
+            args,
+            body,
+        }
     }
 };
 

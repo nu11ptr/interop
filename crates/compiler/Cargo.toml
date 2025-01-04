@@ -7,8 +7,8 @@ edition = "2021"
 ast = { path = "../ast" }
 lexer = { path = "../lexer" }
 
-lalrpop-util = { version = "0.22", features = ["lexer", "unicode"] }
+lalrpop-util = { version = "0.22", default-features = false }
 
 
 [build-dependencies]
-lalrpop = "0.22"
+lalrpop = { version = "0.22", default-features = false }
