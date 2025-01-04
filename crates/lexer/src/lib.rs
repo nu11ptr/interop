@@ -135,6 +135,7 @@ pub type LalrpopToken = Result<(u32, TokenType, u32), &'static str>;
 
 pub struct Lexer<'input> {
     incl_comments: bool,
+    gen_input_markers: bool,
     input: &'input str,
     char_iter: CharIndices<'input>,
     curr_char: Option<(usize, char)>,
@@ -150,7 +151,7 @@ impl<'input> Lexer<'input> {
     const THEN: &'static str = "then";
     const ELSE: &'static str = "else";
 
-    pub fn new(input: &'input str, incl_comments: bool) -> Self {
+    pub fn new(input: &'input str, incl_comments: bool, gen_input_markers: bool) -> Self {
         let mut keywords = HashMap::with_capacity(5);
         keywords.insert(Self::FUNC, TokenType::Func);
         keywords.insert(Self::END, TokenType::End);
@@ -160,6 +161,7 @@ impl<'input> Lexer<'input> {
 
         Self {
             incl_comments,
+            gen_input_markers,
             input,
             char_iter: input.char_indices(),
             curr_char: None,
@@ -279,7 +281,7 @@ impl<'input> Iterator for Lexer<'input> {
     type Item = LalrpopToken;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.last_token.is_none() {
+        if self.gen_input_markers && self.last_token.is_none() {
             // There is no actual token or location. SOI is fully virtual.
             return self.emit_token(TokenType::StartOfInput, 0, 0);
         }
@@ -344,13 +346,14 @@ impl<'input> Iterator for Lexer<'input> {
                     };
                 }
                 // EOF - output EOI token just once
-                None => {
+                None if self.gen_input_markers => {
                     return match self.last_token {
                         Some(TokenType::EndOfInput) => None,
                         // There is no actual token or location. EOI is purely virtual.
                         _ => return self.emit_token(TokenType::EndOfInput, 0, 0),
                     };
                 }
+                None => return None,
             }
         }
     }
@@ -374,17 +377,29 @@ mod test {
 
     #[test]
     fn test_lexer_no_comments() {
-        test_lexer(false);
+        test_lexer(false, true);
     }
 
     #[test]
     fn test_lexer_incl_comments() {
-        test_lexer(true);
+        test_lexer(true, true);
     }
 
-    fn test_lexer(incl_comments: bool) {
-        let mut lexer = Lexer::new(INPUT, incl_comments);
-        assert_eq!(lexer.next(), Some(Ok((0, TokenType::StartOfInput, 0))));
+    #[test]
+    fn test_lexer_no_comments_or_markers() {
+        test_lexer(false, false);
+    }
+
+    #[test]
+    fn test_lexer_incl_comments_but_no_markers() {
+        test_lexer(true, false);
+    }
+
+    fn test_lexer(incl_comments: bool, gen_input_markers: bool) {
+        let mut lexer = Lexer::new(INPUT, incl_comments, gen_input_markers);
+        if gen_input_markers {
+            assert_eq!(lexer.next(), Some(Ok((0, TokenType::StartOfInput, 0))));
+        }
 
         assert_eq!(lexer.next(), Some(Ok((1, TokenType::Number, 4))));
         assert_eq!(lexer.next(), Some(Ok((4, TokenType::Semi, 5))));
@@ -431,7 +446,9 @@ mod test {
         // Unicode  right arrow
         assert_eq!(lexer.next(), Some(Ok((149, TokenType::RArrow, 152))));
 
-        assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
+        if gen_input_markers {
+            assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
+        }
         assert_eq!(lexer.next(), None);
         // It should keep returning None on successive attempts
         assert_eq!(lexer.next(), None);
