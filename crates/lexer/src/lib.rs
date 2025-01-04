@@ -1,5 +1,51 @@
-use std::{collections::HashMap, convert::Infallible, mem, str::CharIndices};
+use std::{collections::HashMap, mem, str::CharIndices};
 
+pub struct PosResolver<'input> {
+    line: u32,
+    col: u32,
+    char_iter: CharIndices<'input>,
+}
+
+impl<'input> PosResolver<'input> {
+    pub fn new(input: &'input str) -> Self {
+        Self {
+            line: 1,
+            col: 1,
+            char_iter: input.char_indices(),
+        }
+    }
+
+    pub fn pos_to_line_col(&mut self, pos: Pos) -> Option<(u32, u32)> {
+        for (idx, c) in self.char_iter.by_ref() {
+            let idx = idx as u32;
+            let pos = pos.0;
+
+            // Found the position
+            if idx == pos {
+                return Some((self.line, self.col));
+            }
+
+            // Oops.. out of order position passed in
+            if idx > pos {
+                return None;
+            }
+
+            if c == '\n' {
+                self.line += 1;
+                self.col = 1;
+            } else {
+                self.col += 1;
+            }
+        }
+
+        None
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Pos(pub u32);
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct Token {
     pub token_type: TokenType,
     start: u32,
@@ -72,8 +118,8 @@ pub enum TokenType {
     // Math operators
     Multiply,
     Divide,
-    Add,
-    Subtract,
+    Plus,
+    Minus,
 
     // Keywords
     Func,
@@ -85,7 +131,7 @@ pub enum TokenType {
     UnknownTokenType,
 }
 
-pub type LalrpopToken = Result<(u32, TokenType, u32), Infallible>;
+pub type LalrpopToken = Result<(u32, TokenType, u32), &'static str>;
 
 pub struct Lexer<'input> {
     incl_comments: bool,
@@ -274,17 +320,17 @@ impl<'input> Iterator for Lexer<'input> {
                         ')' => self.emit_token(TokenType::RightParen, idx, 1),
                         '*' => self.emit_token(TokenType::Multiply, idx, 1),
                         '/' => self.emit_token(TokenType::Divide, idx, 1),
-                        '+' => self.emit_token(TokenType::Add, idx, 1),
+                        '+' => self.emit_token(TokenType::Plus, idx, 1),
                         // Handle subtraction and right arrow disambiguation
                         '-' => match self.char_iter.next() {
                             Some((_, '>')) => self.emit_token(TokenType::RArrow, idx, 2),
                             Some((next_idx, char)) => {
                                 // Save this since not processed yet
                                 self.curr_char = Some((next_idx, char));
-                                self.emit_token(TokenType::Subtract, idx, 1)
+                                self.emit_token(TokenType::Minus, idx, 1)
                             }
                             // EOI
-                            None => self.emit_token(TokenType::Subtract, idx, 1),
+                            None => self.emit_token(TokenType::Minus, idx, 1),
                         },
                         // Start of integer literal
                         '1'..='9' => self.scan_number(idx),
@@ -351,7 +397,7 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((14, TokenType::Number, 15))));
         assert_eq!(lexer.next(), Some(Ok((16, TokenType::Multiply, 17))));
         assert_eq!(lexer.next(), Some(Ok((18, TokenType::Number, 19))));
-        assert_eq!(lexer.next(), Some(Ok((20, TokenType::Add, 21))));
+        assert_eq!(lexer.next(), Some(Ok((20, TokenType::Plus, 21))));
         assert_eq!(lexer.next(), Some(Ok((23, TokenType::Number, 24))));
         if incl_comments {
             assert_eq!(lexer.next(), Some(Ok((25, TokenType::Comment, 44))));
@@ -362,7 +408,7 @@ mod test {
         if incl_comments {
             assert_eq!(lexer.next(), Some(Ok((50, TokenType::Comment, 75))));
         }
-        assert_eq!(lexer.next(), Some(Ok((80, TokenType::Subtract, 81))));
+        assert_eq!(lexer.next(), Some(Ok((80, TokenType::Minus, 81))));
         assert_eq!(lexer.next(), Some(Ok((82, TokenType::Number, 83))));
         assert_eq!(lexer.next(), Some(Ok((84, TokenType::Semi, 85))));
 

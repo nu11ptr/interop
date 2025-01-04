@@ -1,0 +1,162 @@
+use ast::*;
+use lexer::TokenType;
+
+use lalrpop_util::ParseError;
+
+grammar<'input>(input: &'input str);
+
+// // From highest to lowest precedence
+// pub Expr: i32 = {
+//     #[precedence(level="0")]
+//     Term,
+
+//     #[precedence(level="1")]
+//     #[assoc(side="left")]
+//     <l:Expr> "*" <r:Expr> => l * r,
+//     <l:Expr> "/" <r:Expr> => l / r,
+
+//     #[precedence(level="2")]
+//     #[assoc(side="left")]
+//     <l:Expr> "+" <r:Expr> => l + r,
+//     <l:Expr> "-" <r:Expr> => l - r,
+// };
+
+// pub Term: i32 = {
+//     <INT_LIT>,
+//     "(" <INT_LIT> ")",
+// };
+
+// *** Macros ***
+
+Sep<T, C>: Vec<T> = {
+    <mut v:(<T> C)*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+// *** Top level ***
+
+pub File: Vec<Decl> = SOI <decls: Decl*> EOI => decls;
+
+Decl: Decl = {
+    FuncDecl => Decl::Func(<>)
+};
+
+// *** Basic Non-terminals ***
+
+Ident: Ident = <start: @L> IDENT <end: @R> => {
+    Ident { name: input[start as usize..end as usize].to_string() }
+};
+
+IntLit: IntLit = <start: @L> NUMBER_LIT <end: @R> =>? {
+    input[start as usize..end as usize].parse()
+        .map(|value| IntLit { value })
+        .map_err(|_| ParseError::User {
+            error: "Integer literal is larger than 2^32"
+        }
+    )
+};
+
+// *** Types ***
+
+Type: Type = {
+    Ident => Type::Simple(<>),
+};
+
+// *** Expressions ***
+
+Expr: Expr = {
+    SimpleExpr => Expr::Simple(<>)
+};
+
+SimpleExpr: SimpleExpr = {
+    Ident => SimpleExpr::Ident(<>),
+    IntLit => SimpleExpr::IntLit(<>),
+    "(" <e:Expr> ")" => SimpleExpr::Expr(Box::new(e)),
+};
+
+// *** Blocks ***
+
+LastBlock: Block = {
+    ":" <expr: Sep<Expr, ";">> <else_or_end: "end"> => Block {expr, else_or_end},
+};
+
+// *** Function ***
+
+// Parse a list of function arg names
+FuncArgIdents: Vec<Ident> = {
+    <arg:Ident> <args: ("," <Ident>)*> => {
+        let mut v = Vec::with_capacity(args.len() + 1);
+        v.push(arg);
+        v.extend(args);
+        v
+    }
+};
+
+// Parse a function arg duplicating type and default value to all args
+FuncArg: Vec<FuncArg> = {
+    <args: FuncArgIdents> ":" <arg_type: Type> <default_val: ("=" <SimpleExpr>)?> => {
+        args.into_iter().map(|name| FuncArg {
+            name,
+            arg_type: arg_type.clone(),
+            default_val: default_val.clone(),
+        }).collect()
+    }
+};
+
+FuncArgs: Vec<FuncArg> = {
+    Sep<FuncArg, ","> => <>.into_iter().flatten().collect()
+};
+
+FuncBody: FuncBody = {
+    <ret_type: ("->" <Type>)?> <block: LastBlock> => FuncBody::Block(ret_type, block),
+    "->"? <expr: SimpleExpr> ";" => FuncBody::Expr(expr),
+};
+
+FuncDecl: FuncDecl = "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
+    FuncDecl {
+        name,
+        args,
+        body,
+    }
+};
+
+// *** Terminals ***
+
+extern {
+    type Location = u32;
+    type Error = &'static str;
+
+    enum TokenType {
+        SOI => TokenType::StartOfInput,
+        EOI => TokenType::EndOfInput,
+
+        // COMMENT_TOK => TokenType::Comment,
+
+        IDENT => TokenType::Ident,
+        NUMBER_LIT => TokenType::Number,
+
+        "(" => TokenType::LeftParen,
+        ")" => TokenType::RightParen,
+        ";" => TokenType::Semi,
+        ":" => TokenType::Colon,
+        "=" => TokenType::Equals,
+        "," => TokenType::Comma,
+        "->" => TokenType::RArrow,
+
+        // MULTIPLY_TOK => TokenType::Multiply,
+        // DIVIDE_TOK => TokenType::Divide,
+        // PLUS_TOK => TokenType::Plus,
+        // MINUS_TOK => TokenType::Minus,
+        
+        "func" => TokenType::Func,
+        "end" => TokenType::End,
+        "if" => TokenType::If,
+        "then" => TokenType::Then,
+        "else" => TokenType::Else,
+    }
+}

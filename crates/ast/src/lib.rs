@@ -1,127 +1,98 @@
-use bumpalo::collections::{String, Vec};
-use indexmap::IndexSet;
-use std::{hash::Hash, ops::Index, path::PathBuf};
+use std::path::PathBuf;
 
-// *** Nodetracker ***
+use lexer::TokenType;
 
-pub struct NodeTracker<I, N> {
-    nodes: IndexSet<N>,
-    phantom: std::marker::PhantomData<I>,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Ident {
+    pub name: String,
 }
 
-// Implement manually so that N doesn't require Default
-impl<I, N> Default for NodeTracker<I, N> {
-    fn default() -> Self {
-        Self {
-            nodes: IndexSet::default(),
-            phantom: std::marker::PhantomData,
-        }
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub struct IntLit {
+    pub value: i32,
 }
 
-impl<I: From<usize>, N: Hash + Eq> NodeTracker<I, N> {
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            nodes: IndexSet::with_capacity(capacity),
-            phantom: std::marker::PhantomData,
-        }
-    }
+// *** Type ***
 
-    pub fn get_or_insert(&mut self, node: N) -> I {
-        self.nodes.insert_full(node).0.into()
-    }
+// TODO: Flesh this out
+#[derive(Clone, Debug, PartialEq)]
+pub enum Type {
+    Simple(Ident),
 }
 
-impl<I: Into<usize>, N> Index<I> for NodeTracker<I, N> {
-    type Output = N;
+// *** Expressions ***
 
-    fn index(&self, index: I) -> &Self::Output {
-        &self.nodes[index.into()]
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub enum SimpleExpr {
+    Ident(Ident),
+    IntLit(IntLit),
+    // Expression in parens - should be rare
+    Expr(Box<Expr>),
 }
 
-// *** Nodetracker Indices ***
-
-#[derive(Copy, Clone, Debug, Default, Hash, PartialEq, Eq)]
-pub struct TypeIdx(u32);
-
-impl From<usize> for TypeIdx {
-    fn from(value: usize) -> Self {
-        Self(value as u32)
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub enum Expr {
+    If(If),
+    Simple(SimpleExpr),
 }
 
-impl From<TypeIdx> for usize {
-    fn from(value: TypeIdx) -> Self {
-        value.0 as usize
-    }
+// *** Block ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Block {
+    pub expr: Vec<Expr>,
+    // else or end keyword
+    pub else_or_end: TokenType,
 }
 
-#[derive(Copy, Clone, Debug, Default, Hash, PartialEq, Eq)]
-pub struct IdentIdx(u32);
+// *** Function ***
 
-impl From<usize> for IdentIdx {
-    fn from(value: usize) -> Self {
-        Self(value as u32)
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub enum FuncBody {
+    Expr(SimpleExpr),
+    Block(Option<Type>, Block),
 }
 
-impl From<IdentIdx> for usize {
-    fn from(value: IdentIdx) -> Self {
-        value.0 as usize
-    }
+#[derive(Clone, Debug, PartialEq)]
+pub struct FuncArg {
+    pub name: Ident,
+    pub arg_type: Type,
+    pub default_val: Option<SimpleExpr>,
 }
 
-// *** AstBuilder ***
-
-#[derive(Default)]
-pub struct AstBuilder<'bump> {
-    pub types: NodeTracker<TypeIdx, Type<'bump>>,
-    pub idents: NodeTracker<IdentIdx, Ident<'bump>>,
+#[derive(Clone, Debug, PartialEq)]
+pub struct FuncDecl {
+    pub name: Ident,
+    pub args: Vec<FuncArg>,
+    pub body: FuncBody,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Ident<'bump> {
-    pub name: String<'bump>,
+// *** If ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum IfBody {
+    // Special case for "else if" since "if" is not a simple expression
+    If(Box<If>),
+    Expr(SimpleExpr),
+    Block(Block),
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum Type<'bump> {
-    Custom {
-        typ: IdentIdx,
-        type_params: Vec<'bump, TypeIdx>,
-    },
-    Integer,
-    Float,
-    Boolean,
-    Unit,
+#[derive(Clone, Debug, PartialEq)]
+pub struct If {
+    pub condition: SimpleExpr,
+    pub then_body: IfBody,
+    pub else_body: Option<IfBody>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Field {
-    pub name: IdentIdx,
-    pub typ: TypeIdx,
+// *** Top level ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Decl {
+    Func(FuncDecl),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Function<'bump> {
-    pub name: IdentIdx,
-    pub params: Vec<'bump, Field>,
-    pub ret: TypeIdx,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Decl<'bump> {
-    Function(Function<'bump>),
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct File<'bump> {
+#[derive(Clone, Debug, PartialEq)]
+pub struct File {
     pub path: PathBuf,
-    pub content: Vec<'bump, Decl<'bump>>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Package<'bump> {
-    pub files: Vec<'bump, File<'bump>>,
+    pub decls: Vec<Decl>,
 }

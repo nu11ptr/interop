@@ -1,18 +1,19 @@
-use pest::Parser;
-use pest_derive::Parser;
 use std::{env, fs};
 
-#[derive(Parser)]
-#[grammar = "../../interop.pest"]
-pub struct InteropParser;
+use lalrpop_util::lalrpop_mod;
+use lexer::Lexer;
 
 fn main() {
     let filename = env::args().nth(1).unwrap();
     let src = fs::read_to_string(filename).unwrap();
-    let parse = InteropParser::parse(Rule::grammar, &src);
+
+    let lexer = Lexer::new(&src, false);
+
+    lalrpop_mod!(interop);
+    let parse = interop::FileParser::new().parse(&src, lexer);
 
     match parse {
-        Ok(pairs) => println!("{pairs:#?}"),
-        Err(e) => println!("Parsing failed: {e}"),
+        Ok(ast) => println!("{ast:#?}"),
+        e @ _ => println!("Parsing failed: {e:#?}"),
     }
 }

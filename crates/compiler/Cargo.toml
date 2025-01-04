@@ -4,5 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-pest = "2.7.4"
-pest_derive = "2.7.4"
+ast = { path = "../ast" }
+lexer = { path = "../lexer" }
+
+lalrpop-util = { version = "0.22", features = ["lexer", "unicode"] }
+
+
+[build-dependencies]
+lalrpop = "0.22"
