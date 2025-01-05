@@ -118,7 +118,7 @@ FuncArg: Vec<FuncArg<'input>> = {
     }
 };
 
-FuncArgs: Vec<FuncArg<'input>> = {
+pub FuncArgs: Vec<FuncArg<'input>> = {
     SepOptTrailing<FuncArg, ","> => <>.into_iter().flatten().collect()
 };
 
@@ -127,7 +127,7 @@ FuncBody: FuncBody<'input> = {
     "->"? <SimpleExpr> => FuncBody::Expr(<>),
 };
 
-FuncDecl: FuncDecl<'input> = {
+pub FuncDecl: FuncDecl<'input> = {
     "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
         FuncDecl {
             name,

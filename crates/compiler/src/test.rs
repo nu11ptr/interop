@@ -1,6 +1,85 @@
 use lalrpop_util::lalrpop_mod;
 use lexer::Lexer;
 
+// *** function ***
+
+fn func_parser(src: &str) -> ast::FuncDecl<'_> {
+    let lexer = Lexer::new(src, false, false);
+
+    lalrpop_mod!(interop);
+    interop::FuncDeclParser::new()
+        .parse(src, lexer)
+        .expect("function node")
+}
+
+#[test]
+fn func_arrow_type_block() {
+    let src = r"
+        func my_func() -> Int:
+            123
+        end";
+    let _actual = func_parser(src);
+}
+
+#[test]
+fn func_no_type_block() {
+    let src = r"
+        func my_func2():
+            func my_func5() println
+            123
+        end";
+    let _actual = func_parser(src);
+}
+
+#[test]
+fn func_arrow_no_type() {
+    let src = r"
+        func my_func3() -> 123";
+    let _actual = func_parser(src);
+}
+
+#[test]
+fn func_no_type() {
+    let src = r"
+        func my_func4() println";
+    let _actual = func_parser(src);
+}
+
+// *** function args ***
+
+fn func_args_parser(src: &str) -> Vec<ast::FuncArg<'_>> {
+    let lexer = Lexer::new(src, false, false);
+
+    lalrpop_mod!(interop);
+    interop::FuncArgsParser::new()
+        .parse(src, lexer)
+        .expect("function arg node")
+}
+
+#[test]
+fn func_args_none() {
+    let src = r"";
+    let _actual = func_args_parser(src);
+}
+
+#[test]
+fn func_args_comma_list_one_type() {
+    let src = r"a, b: Int";
+    let _actual = func_args_parser(src);
+}
+
+#[test]
+fn func_args_comma_list_all_types() {
+    let src = r"a: Int, b: Int";
+    let _actual = func_args_parser(src);
+}
+
+#[test]
+fn func_args_comma_list_one_type_default_val() {
+    let src = r"a: Int, b: Int = 123";
+    let _actual = func_args_parser(src);
+}
+
 // *** If ***
 
 fn if_parser(src: &str) -> ast::If<'_> {
