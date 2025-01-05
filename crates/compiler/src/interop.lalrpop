@@ -171,7 +171,7 @@ extern {
         // COMMENT_TOK => TokenType::Comment,
 
         IDENT => TokenType::Ident,
-        NUMBER_LIT => TokenType::Number,
+        NUMBER_LIT => TokenType::NumberLit,
 
         "(" => TokenType::LeftParen,
         ")" => TokenType::RightParen,
