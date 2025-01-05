@@ -1,10 +1,22 @@
 use std::{borrow::Cow, path::PathBuf};
 
-use lexer::TokenType;
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ident<'input> {
     pub name: Cow<'input, str>,
+}
+
+impl<'input> Ident<'input> {
+    pub fn from_str(ident: &'input str) -> Self {
+        Self {
+            name: Cow::Borrowed(ident),
+        }
+    }
+
+    pub fn from_string(ident: String) -> Self {
+        Self {
+            name: Cow::Owned(ident),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -42,8 +54,6 @@ pub enum Expr<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Block<'input> {
     pub expr: Vec<Expr<'input>>,
-    // else or end keyword
-    pub else_or_end: TokenType,
 }
 
 // *** Function ***
@@ -51,6 +61,7 @@ pub struct Block<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum FuncBody<'input> {
     Expr(SimpleExpr<'input>),
+    // TODO: Move type into block? (can be used by type inference later, if needed)
     Block(Option<Type<'input>>, Block<'input>),
 }
 
@@ -71,7 +82,14 @@ pub struct FuncDecl<'input> {
 // *** If ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum IfBody<'input> {
+pub enum ThenBody<'input> {
+    // Lack of 'If' prevents: if <cond> then if <cond> then <expr>
+    Expr(SimpleExpr<'input>),
+    Block(Block<'input>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ElseBody<'input> {
     // Special case for "else if" since "if" is not a simple expression
     If(Box<If<'input>>),
     Expr(SimpleExpr<'input>),
@@ -80,9 +98,9 @@ pub enum IfBody<'input> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct If<'input> {
-    pub condition: SimpleExpr<'input>,
-    pub then_body: IfBody<'input>,
-    pub else_body: Option<IfBody<'input>>,
+    pub cond: SimpleExpr<'input>,
+    pub then_body: ThenBody<'input>,
+    pub else_body: Option<ElseBody<'input>>,
 }
 
 // *** Top level ***

@@ -1,19 +1,17 @@
-# func my_func(a, b: Int = blah, c: String) -> String:
-#     ends
-#     ; 1
-#     1
-# 
-#     if 1 then
-#         1
-#     else if 1 then:
-#         1
-#         1
-#     else if 1 then
-#         1
-#     else:
-#         1
-#     end
-# end
+func my_func(a, b: Int = blah, c: String) -> String:
+    ends
+    1
+    1
+
+    if blah then okay else whatever
+
+    if 1 then 1 else if 1 then:
+        1
+        1
+    else if 1 then 1 else:
+        1
+    end
+end
 
 # Style 1
 func my_func(a, b: Int = blah, c: String) -> Int:

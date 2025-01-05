@@ -34,8 +34,8 @@ maybe_last_block_expr = { !(END | ELSE) ~ expr_line }
 
 // *** If ***
 
-if_expr = { IF ~ simple_expr }
-//if_expr = { IF ~ simple_expr ~ THEN ~ if_body }
+//if_expr = { IF ~ simple_expr }
+if_expr = { IF ~ simple_expr ~ THEN ~ if_body }
 
 if_body = { if_block_body | if_simple_body }
 

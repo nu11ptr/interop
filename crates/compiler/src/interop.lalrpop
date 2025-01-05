@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use ast::*;
 use lexer::TokenType;
 
@@ -30,7 +28,7 @@ grammar<'input>(input: &'input str);
 
 // *** Macros ***
 
-Sep<T, C>: Vec<T> = {
+SepOptTrailing<T, C>: Vec<T> = {
     <mut v:(<T> C)*> <e:T?> => match e {
         None => v,
         Some(e) => {
@@ -40,10 +38,16 @@ Sep<T, C>: Vec<T> = {
     }
 };
 
+Block<T>: Block<'input> = {
+    // Semicolon cannot be optional on last item because
+    // then it creates if/then shift/reduce issue
+    ":" <expr: (<Expr> ";")+> T => Block {expr}
+};
+
 // *** Top level ***
 
 pub File: Vec<Decl<'input>> = {
-    SOI <Sep<Decl, ";">> EOI
+    SOI <(<Decl> ";")*> EOI
 };
 
 Decl: Decl<'input> = {
@@ -54,9 +58,7 @@ Decl: Decl<'input> = {
 
 Ident: Ident<'input> = {
     <start: @L> IDENT <end: @R> => {
-        Ident { 
-            name: Cow::Borrowed(&input[start as usize..end as usize]) 
-        }
+        Ident::from_str(&input[start as usize..end as usize])
     }
 };
 
@@ -81,20 +83,15 @@ Type: Type<'input> = {
 // *** Expressions ***
 
 Expr: Expr<'input> = {
-    SimpleExpr => Expr::Simple(<>),
+    If => Expr::If(<>),
     FuncDecl => Expr::Func(<>),
+    SimpleExpr => Expr::Simple(<>),
 };
 
 SimpleExpr: SimpleExpr<'input> = {
     Ident => SimpleExpr::Ident(<>),
     IntLit => SimpleExpr::IntLit(<>),
     "(" <Expr> ")" => SimpleExpr::Expr(Box::new(<>)),
-};
-
-// *** Blocks ***
-
-LastBlock: Block<'input> = {
-    ":" <expr: Sep<Expr, ";">> <else_or_end: "end"> => Block {expr, else_or_end},
 };
 
 // *** Function ***
@@ -122,11 +119,11 @@ FuncArg: Vec<FuncArg<'input>> = {
 };
 
 FuncArgs: Vec<FuncArg<'input>> = {
-    Sep<FuncArg, ","> => <>.into_iter().flatten().collect()
+    SepOptTrailing<FuncArg, ","> => <>.into_iter().flatten().collect()
 };
 
 FuncBody: FuncBody<'input> = {
-    <ret_type: ("->" <Type>)?> <block: LastBlock> => FuncBody::Block(ret_type, block),
+    <ret_type: ("->" <Type>)?> <block: Block<"end">> => FuncBody::Block(ret_type, block),
     "->"? <SimpleExpr> => FuncBody::Expr(<>),
 };
 
@@ -137,6 +134,27 @@ FuncDecl: FuncDecl<'input> = {
             args,
             body,
         }
+    }
+};
+
+// *** If ***
+
+IfBody: (ThenBody<'input>, Option<ElseBody<'input>>) = {
+    <expr: SimpleExpr> <else_: ("else" <ElseBody>)?> => (ThenBody::Expr(expr), else_),
+    <block: Block<"else">> <else_: ElseBody> => (ThenBody::Block(block), Some(else_)),
+    Block<"end"> => (ThenBody::Block(<>), None),
+};
+
+ElseBody: ElseBody<'input> = {
+    // Special case 'else if' to allow chaining (since not a simple expression)
+    If => ElseBody::If(Box::new(<>)),
+    Block<"end"> => ElseBody::Block(<>),
+    SimpleExpr => ElseBody::Expr(<>),
+};
+
+pub If: If<'input> = {
+    "if" <cond: SimpleExpr> "then" <if_body: IfBody> => {
+        If { cond, then_body: if_body.0, else_body: if_body.1 }
     }
 };
 
