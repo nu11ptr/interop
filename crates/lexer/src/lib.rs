@@ -105,6 +105,7 @@ pub enum TokenType {
     // Expression literals
     Ident,
     Number,
+    String,
 
     // Various symbols
     LeftParen,
@@ -128,7 +129,23 @@ pub enum TokenType {
     Then,
     Else,
 
-    UnknownTokenType,
+    Error(TokenErrorKind),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum TokenErrorKind {
+    UnknownType,
+
+    InvalidString(StringErrorKind),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum StringErrorKind {
+    Unterminated,
+    InvalidChar,
+    InvalidEscape,
+    InvalidHexEscape,
+    InvalidUnicodeEscape,
 }
 
 pub type LalrpopToken = Result<(u32, TokenType, u32), &'static str>;
@@ -242,6 +259,163 @@ impl<'input> Lexer<'input> {
         self.emit_token(TokenType::Number, start_idx, len)
     }
 
+    fn scan_hex_or_unicode_escape(
+        &mut self,
+        start_idx: usize,
+        curr_len: usize,
+        error_kind: StringErrorKind,
+        desired_len: usize,
+    ) -> Result<usize, Option<LalrpopToken>> {
+        // The escape char + 'u' or 'x' char
+        let mut len = 2;
+
+        loop {
+            match self.char_iter.next() {
+                Some((_, char)) => match char {
+                    '0'..='9' | 'a'..='f' | 'A'..='F' => {
+                        // ASCII hex digits - always length of 1
+                        len += 1;
+
+                        // We need exactly desired_len - 2 hex digits after the 'u' or 'x'
+                        if len == desired_len {
+                            break;
+                        }
+                    }
+                    // If not a valid hex digit then don't consume and we are done
+                    _ => {
+                        // Consume the invalid char (which could be unicode)
+                        len += char.len_utf8();
+
+                        return Err(self.emit_token(
+                            TokenType::Error(TokenErrorKind::InvalidString(error_kind)),
+                            start_idx,
+                            curr_len + len,
+                        ));
+                    }
+                },
+                // EOI
+                None => {
+                    return Err(self.emit_token(
+                        TokenType::Error(TokenErrorKind::InvalidString(
+                            StringErrorKind::Unterminated,
+                        )),
+                        start_idx,
+                        curr_len + len,
+                    ))
+                }
+            }
+        }
+
+        Ok(len)
+    }
+
+    fn scan_escape(
+        &mut self,
+        start_idx: usize,
+        curr_len: usize,
+        quote: char,
+    ) -> Result<usize, Option<LalrpopToken>> {
+        match self.char_iter.next() {
+            Some((_, char)) => match char {
+                // ASCII escaped chars - always length of 1
+                '\\' | 'n' | 'r' | 't' | '0' => Ok(2),
+                // ASCII hex escape
+                'x' => self.scan_hex_or_unicode_escape(
+                    start_idx,
+                    curr_len,
+                    StringErrorKind::InvalidHexEscape,
+                    4,
+                ),
+                // Unicode escape
+                'u' => self.scan_hex_or_unicode_escape(
+                    start_idx,
+                    curr_len,
+                    StringErrorKind::InvalidUnicodeEscape,
+                    8,
+                ),
+                // Escaped quote
+                _ if char == quote => Ok(2),
+                // Invalid escape
+                _ => Err(self.emit_token(
+                    TokenType::Error(TokenErrorKind::InvalidString(
+                        StringErrorKind::InvalidEscape,
+                    )),
+                    start_idx,
+                    // This could be unicode, so we don't know the length (+ escape char)
+                    curr_len + char.len_utf8() + 1,
+                )),
+            },
+            // Unexpected EOI
+            None => {
+                // We never saw closing quote
+                return Err(self.emit_token(
+                    TokenType::Error(TokenErrorKind::InvalidString(StringErrorKind::Unterminated)),
+                    start_idx,
+                    // Add the escape char
+                    curr_len + 1,
+                ));
+            }
+        }
+    }
+
+    fn scan_string(&mut self, start_idx: usize) -> Option<LalrpopToken> {
+        // The opening quote
+        let mut len = 1;
+
+        loop {
+            match self.char_iter.next() {
+                Some((_, char)) => match char {
+                    // Escape start
+                    '\\' => match self.scan_escape(start_idx, len, '"') {
+                        Ok(escape_len) => len += escape_len,
+                        Err(token) => return token,
+                    },
+                    // Closing quote
+                    '"' => {
+                        // ASCII quote - always length of 1
+                        len += 1;
+                        break;
+                    }
+                    // Newline and carriage return are not allowed in strings (must be escaped)
+                    // TODO: Alternative, allow '\n' and strip '\r' later?
+                    '\n' | '\r' => {
+                        // We include this as part of string because otherwise it would be
+                        // subject to the line ending semi colon logic. This might cause
+                        // issues as it would be looking at the invalid string chars to decide
+                        // if it should emit a semi colon.
+                        //
+                        // ASCII newline or carriage return - always length of 1
+                        len += 1;
+
+                        // We never saw closing quote
+                        return self.emit_token(
+                            TokenType::Error(TokenErrorKind::InvalidString(
+                                StringErrorKind::InvalidChar,
+                            )),
+                            start_idx,
+                            len,
+                        );
+                    }
+                    // Valid char, add to string. Could be unicode, so we don't know the length
+                    _ => len += char.len_utf8(),
+                },
+                // Unexpected EOI
+                None => {
+                    // We never saw closing quote
+                    return self.emit_token(
+                        TokenType::Error(TokenErrorKind::InvalidString(
+                            StringErrorKind::Unterminated,
+                        )),
+                        start_idx,
+                        len,
+                    );
+                }
+            }
+        }
+
+        self.emit_token(TokenType::String, start_idx, len)
+    }
+
     fn scan_ident_or_keyword(
         &mut self,
         start_idx: usize,
@@ -337,6 +511,7 @@ impl<'input> Iterator for Lexer<'input> {
                             // EOI
                             None => self.emit_token(TokenType::Minus, idx, 1),
                         },
+                        '"' => self.scan_string(idx),
                         // Start of integer literal
                         '1'..='9' => self.scan_number(idx),
                         // Next two are start of keyword or identifier
@@ -345,7 +520,11 @@ impl<'input> Iterator for Lexer<'input> {
                         _ if char.is_alphabetic() => {
                             self.scan_ident_or_keyword(idx, char.len_utf8())
                         }
-                        _ => self.emit_token(TokenType::UnknownTokenType, idx, char.len_utf8()),
+                        _ => self.emit_token(
+                            TokenType::Error(TokenErrorKind::UnknownType),
+                            idx,
+                            char.len_utf8(),
+                        ),
                     };
                 }
                 // EOF - output EOI token just once
@@ -378,27 +557,111 @@ mod test {
     func,:=->→
 ";
 
+    fn lexer_single_token_test(input: &str, token_type: TokenType, start: u32, end: u32) {
+        let mut lexer = Lexer::new(input, false, false);
+        assert_eq!(lexer.next(), Some(Ok((start, token_type, end))));
+        assert_eq!(lexer.next(), None);
+    }
+
+    // *** Single Token Tests ***
+
     #[test]
-    fn test_lexer_no_comments() {
-        test_lexer(false, true);
+    fn string_basic() {
+        lexer_single_token_test(r#""hello""#, TokenType::String, 0, 7);
     }
 
     #[test]
-    fn test_lexer_incl_comments() {
-        test_lexer(true, true);
+    fn string_basic_unicode() {
+        lexer_single_token_test(r#""helloß""#, TokenType::String, 0, 9);
     }
 
     #[test]
-    fn test_lexer_no_comments_or_markers() {
-        test_lexer(false, false);
+    fn string_escapes() {
+        lexer_single_token_test(
+            r#" "\\\t\n\r\0\" \u012789 \uaBcDeF \x09 \xaF" "#,
+            TokenType::String,
+            1,
+            43,
+        );
     }
 
     #[test]
-    fn test_lexer_incl_comments_but_no_markers() {
-        test_lexer(true, false);
+    fn string_unterminated() {
+        let tt = TokenType::Error(super::TokenErrorKind::InvalidString(
+            super::StringErrorKind::Unterminated,
+        ));
+        lexer_single_token_test(r#""hello"#, tt, 0, 6);
+        // In simple escape
+        lexer_single_token_test(r#""\"#, tt, 0, 2);
+        // In unicode escape
+        lexer_single_token_test(r#""\u"#, tt, 0, 3);
+        // In hex escape
+        lexer_single_token_test(r#""\x"#, tt, 0, 3);
     }
 
-    fn test_lexer(incl_comments: bool, gen_input_markers: bool) {
+    #[test]
+    fn string_invalid_char() {
+        let tt = TokenType::Error(super::TokenErrorKind::InvalidString(
+            super::StringErrorKind::InvalidChar,
+        ));
+        let mut buffer = String::with_capacity(3);
+
+        buffer.push('"');
+        buffer.push('\n');
+        lexer_single_token_test(&buffer, tt, 0, 2);
+
+        buffer.clear();
+        buffer.push('"');
+        buffer.push('\r');
+        lexer_single_token_test(&buffer, tt, 0, 2);
+    }
+
+    #[test]
+    fn string_invalid_simple_escape() {
+        let tt = |kind| TokenType::Error(super::TokenErrorKind::InvalidString(kind));
+        // In simple escape
+        lexer_single_token_test(r#""\|"#, tt(crate::StringErrorKind::InvalidEscape), 0, 3);
+
+        // In unicode escape
+        lexer_single_token_test(
+            r#""\u|"#,
+            tt(crate::StringErrorKind::InvalidUnicodeEscape),
+            0,
+            4,
+        );
+
+        // In hex escape
+        lexer_single_token_test(
+            r#""\x|"#,
+            tt(crate::StringErrorKind::InvalidHexEscape),
+            0,
+            4,
+        );
+    }
+
+    // *** Full Lexer Tests ***
+
+    #[test]
+    fn lexer_full_no_comments() {
+        lexer_full(false, true);
+    }
+
+    #[test]
+    fn lexer_full_incl_comments() {
+        lexer_full(true, true);
+    }
+
+    #[test]
+    fn lexer_full_no_comments_or_markers() {
+        lexer_full(false, false);
+    }
+
+    #[test]
+    fn lexer_full_incl_comments_but_no_markers() {
+        lexer_full(true, false);
+    }
+
+    fn lexer_full(incl_comments: bool, gen_input_markers: bool) {
         let mut lexer = Lexer::new(INPUT, incl_comments, gen_input_markers);
         if gen_input_markers {
             assert_eq!(lexer.next(), Some(Ok((0, TokenType::StartOfInput, 0))));
