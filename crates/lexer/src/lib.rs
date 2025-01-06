@@ -474,7 +474,6 @@ impl<'input> Iterator for Lexer<'input> {
                         ':' => self.emit_token(TokenType::Colon, idx, 1),
                         '=' => self.emit_token(TokenType::Equals, idx, 1),
                         ',' => self.emit_token(TokenType::Comma, idx, 1),
-                        '→' => self.emit_token(TokenType::RArrow, idx, '→'.len_utf8()),
                         ';' => self.emit_token(TokenType::Semi, idx, 1),
                         '(' => self.emit_token(TokenType::LeftParen, idx, 1),
                         ')' => self.emit_token(TokenType::RightParen, idx, 1),
@@ -527,18 +526,6 @@ mod test {
     use crate::{StringErrorKind, TokenErrorKind};
 
     use super::{Lexer, TokenType};
-
-    const INPUT: &str = r" 123;(45)
-    6 * 7 +  8 # This is a comment
-
-    # This is another comment
-    - 9 ;
-
-    if then ifs else end
-    _this_IS_an_Iß3NT
-
-    func,:=->→
-";
 
     fn lexer_single_token_test(input: &str, token_type: TokenType, start: u32, end: u32) {
         let mut lexer = Lexer::new(input, false, false);
@@ -643,6 +630,19 @@ mod test {
     }
 
     fn lexer_full(incl_comments: bool, gen_input_markers: bool) {
+        const INPUT: &str = r#" 123;(45)
+    6 * 7 +  8 # This is a comment
+
+    # This is another comment
+    - 9 ;
+
+    if then ifs else end
+    _this_IS_an_Iß3NT
+
+    func,:=->
+    "This is a string!\n"
+    "#;
+
         let mut lexer = Lexer::new(INPUT, incl_comments, gen_input_markers);
         if gen_input_markers {
             assert_eq!(lexer.next(), Some(Ok((0, TokenType::StartOfInput, 0))));
@@ -689,10 +689,12 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((144, TokenType::Comma, 145))));
         assert_eq!(lexer.next(), Some(Ok((145, TokenType::Colon, 146))));
         assert_eq!(lexer.next(), Some(Ok((146, TokenType::Equals, 147))));
-        // ASCII right arrow
         assert_eq!(lexer.next(), Some(Ok((147, TokenType::RArrow, 149))));
-        // Unicode  right arrow
-        assert_eq!(lexer.next(), Some(Ok((149, TokenType::RArrow, 152))));
+
+        assert_eq!(
+            lexer.next(),
+            Some(Ok((154, TokenType::StringLit(true), 175)))
+        );
 
         if gen_input_markers {
             assert_eq!(lexer.next(), Some(Ok((0, TokenType::EndOfInput, 0))));
