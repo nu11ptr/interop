@@ -24,6 +24,40 @@ pub struct IntLit {
     pub value: i32,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct StringLit<'input> {
+    unparsed: Cow<'input, str>,
+    parsed: Option<Cow<'input, str>>,
+}
+
+impl<'input> StringLit<'input> {
+    pub fn from_str(s: &'input str, has_escapes: bool) -> Self {
+        let unparsed = Cow::Borrowed(s);
+
+        // if no escapes, then we are already parsed
+        let parsed = if has_escapes {
+            Some(unparsed.clone())
+        } else {
+            None
+        };
+
+        Self { unparsed, parsed }
+    }
+
+    pub fn from_string(s: String, has_escapes: bool) -> Self {
+        let unparsed: Cow<'_, str> = Cow::Owned(s);
+
+        // if no escapes, then we are already parsed
+        let parsed = if has_escapes {
+            Some(unparsed.clone())
+        } else {
+            None
+        };
+
+        Self { unparsed, parsed }
+    }
+}
+
 // *** Type ***
 
 // TODO: Flesh this out
@@ -38,6 +72,7 @@ pub enum Type<'input> {
 pub enum SimpleExpr<'input> {
     Ident(Ident<'input>),
     IntLit(IntLit),
+    StringLit(StringLit<'input>),
     // Expression in parens - should be rare
     Expr(Box<Expr<'input>>),
 }
