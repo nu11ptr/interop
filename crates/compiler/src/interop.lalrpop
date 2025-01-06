@@ -81,6 +81,13 @@ StringLit: StringLit<'input> = {
     }
 };
 
+CharLit: CharLit<'input> = {
+    <start: @L> <has_escapes: CHAR_LIT> <end: @R> => {
+        let s = &input[start as usize..end as usize];
+        CharLit::from_str(s, has_escapes)
+    }
+};
+
 // *** Types ***
 
 Type: Type<'input> = {
@@ -99,6 +106,7 @@ SimpleExpr: SimpleExpr<'input> = {
     Ident => SimpleExpr::Ident(<>),
     IntLit => SimpleExpr::IntLit(<>),
     StringLit => SimpleExpr::StringLit(<>),
+    CharLit => SimpleExpr::CharLit(<>),
     "(" <Expr> ")" => SimpleExpr::Expr(Box::new(<>)),
 };
 
@@ -181,6 +189,7 @@ extern {
         IDENT => TokenType::Ident,
         NUMBER_LIT => TokenType::NumberLit,
         STRING_LIT => TokenType::StringLit(<bool>),
+        CHAR_LIT => TokenType::CharLit(<bool>),
 
         "(" => TokenType::LeftParen,
         ")" => TokenType::RightParen,

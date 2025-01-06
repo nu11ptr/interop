@@ -36,9 +36,9 @@ impl<'input> StringLit<'input> {
 
         // if no escapes, then we are already parsed
         let parsed = if has_escapes {
-            Some(unparsed.clone())
-        } else {
             None
+        } else {
+            Some(unparsed.clone())
         };
 
         Self { unparsed, parsed }
@@ -49,9 +49,43 @@ impl<'input> StringLit<'input> {
 
         // if no escapes, then we are already parsed
         let parsed = if has_escapes {
-            Some(unparsed.clone())
-        } else {
             None
+        } else {
+            Some(unparsed.clone())
+        };
+
+        Self { unparsed, parsed }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct CharLit<'input> {
+    unparsed: Cow<'input, str>,
+    parsed: Option<char>,
+}
+
+impl<'input> CharLit<'input> {
+    pub fn from_str(s: &'input str, has_escapes: bool) -> Self {
+        let unparsed = Cow::Borrowed(s);
+
+        // if no escapes, then we are already parsed
+        let parsed = if has_escapes {
+            None
+        } else {
+            Some(unparsed.chars().nth(1).unwrap())
+        };
+
+        Self { unparsed, parsed }
+    }
+
+    pub fn from_string(s: String, has_escapes: bool) -> Self {
+        let unparsed: Cow<'_, str> = Cow::Owned(s);
+
+        // if no escapes, then we are already parsed
+        let parsed = if has_escapes {
+            None
+        } else {
+            Some(unparsed.chars().nth(1).unwrap())
         };
 
         Self { unparsed, parsed }
@@ -73,6 +107,7 @@ pub enum SimpleExpr<'input> {
     Ident(Ident<'input>),
     IntLit(IntLit),
     StringLit(StringLit<'input>),
+    CharLit(CharLit<'input>),
     // Expression in parens - should be rare
     Expr(Box<Expr<'input>>),
 }
