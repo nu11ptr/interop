@@ -126,6 +126,8 @@ pub enum TokenType {
     Minus,
 
     // Keywords
+    True,
+    False,
     Func,
     End,
     If,
@@ -174,6 +176,9 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    const TRUE: &'static str = "true";
+    const FALSE: &'static str = "false";
+
     const FUNC: &'static str = "func";
     const END: &'static str = "end";
 
@@ -182,7 +187,9 @@ impl<'input> Lexer<'input> {
     const ELSE: &'static str = "else";
 
     pub fn new(input: &'input str, incl_comments: bool, gen_input_markers: bool) -> Self {
-        let mut keywords = HashMap::with_capacity(5);
+        let mut keywords = HashMap::with_capacity(7);
+        keywords.insert(Self::TRUE, TokenType::True);
+        keywords.insert(Self::FALSE, TokenType::False);
         keywords.insert(Self::FUNC, TokenType::Func);
         keywords.insert(Self::END, TokenType::End);
         keywords.insert(Self::IF, TokenType::If);
@@ -516,7 +523,9 @@ impl<'input> Lexer<'input> {
         let ident = &self.input[start_idx..start_idx + len];
 
         match self.keywords.get(ident) {
+            // Keyword
             Some(token_type) => self.emit_token(*token_type, start_idx, len),
+            // Identifier
             None => self.emit_token(TokenType::Ident, start_idx, len),
         }
     }
@@ -774,6 +783,18 @@ mod test {
             crate::CharErrorKind::CharTooLong,
         ));
         lexer_single_token_test(r#"'ab'"#, tt, 0, 4);
+    }
+
+    // *** Bool Literal Tests ***
+
+    #[test]
+    fn bool_true() {
+        lexer_single_token_test("true", TokenType::True, 0, 4);
+    }
+
+    #[test]
+    fn bool_false() {
+        lexer_single_token_test("false", TokenType::False, 0, 5);
     }
 
     // *** Full Lexer Tests ***

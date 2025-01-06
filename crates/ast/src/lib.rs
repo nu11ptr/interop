@@ -1,5 +1,7 @@
 use std::{borrow::Cow, path::PathBuf};
 
+// *** Identifiers ***
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ident<'input> {
     pub name: Cow<'input, str>,
@@ -19,10 +21,17 @@ impl<'input> Ident<'input> {
     }
 }
 
+// *** Literals ***
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct IntLit {
     pub value: i32,
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct BoolLit(pub bool);
+
+// *** String literal ***
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct StringLit<'input> {
@@ -57,6 +66,8 @@ impl<'input> StringLit<'input> {
         Self { unparsed, parsed }
     }
 }
+
+// *** Char literal ***
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CharLit<'input> {

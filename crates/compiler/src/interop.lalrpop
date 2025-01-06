@@ -54,13 +54,15 @@ Decl: Decl<'input> = {
     FuncDecl => Decl::Func(<>)
 };
 
-// *** Basic Non-terminals ***
+// *** Identifier ***
 
 Ident: Ident<'input> = {
     <start: @L> IDENT <end: @R> => {
         Ident::from_str(&input[start as usize..end as usize])
     }
 };
+
+// *** Literals ***
 
 IntLit: IntLit = {
     <start: @L> NUMBER_LIT <end: @R> =>? {
@@ -72,6 +74,11 @@ IntLit: IntLit = {
             }
         )
     }
+};
+
+BoolLit: BoolLit = {
+    "true" => BoolLit(true),
+    "false" => BoolLit(false),
 };
 
 StringLit: StringLit<'input> = {
@@ -204,8 +211,12 @@ extern {
         // PLUS_TOK => TokenType::Plus,
         // MINUS_TOK => TokenType::Minus,
         
+        "true" => TokenType::True,
+        "false" => TokenType::False,
+
         "func" => TokenType::Func,
         "end" => TokenType::End,
+
         "if" => TokenType::If,
         "then" => TokenType::Then,
         "else" => TokenType::Else,
