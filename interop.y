@@ -76,7 +76,7 @@ DefaultVal
 
 FuncBody
     : R_ARROW SimpleExpr
-    | FuncRetType LastBlock
+    | FuncRetType Block END
     ;
 
 FuncRetType
@@ -84,8 +84,27 @@ FuncRetType
     | R_ARROW Type
     ;
 
-LastBlock
-    : COLON Exprs END
+Block
+    : COLON Exprs
+    ;
+
+// *** If ***
+
+If
+    : IF SimpleExpr THEN ThenBody
+    ;
+
+ThenBody
+    : SimpleExpr
+    | Block END
+    | SimpleExpr ELSE ElseBody
+    | Block ELSE ElseBody
+    ;
+
+ElseBody
+    : If
+    | SimpleExpr
+    | Block END
     ;
 
 // *** Expressions ***
@@ -127,6 +146,7 @@ SimpleExpr
 
 Expr
     : SimpleExpr
+    | If
     ;
 
 %%
