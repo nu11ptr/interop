@@ -1,0 +1,43 @@
+File -> Decl ';'
+File -> File Decl
+
+Decl -> FuncDecl
+
+Type -> IDENT
+
+FuncDecl -> 'func' IDENT FuncArgs FuncBody
+
+FuncArgs -> '(' ')'
+FuncArgs -> '(' FuncArgsInner FuncArgOptComma ')'
+
+FuncArgsInner -> FuncArg
+FuncArgsInner -> FuncArgsInner ',' FuncArg
+
+FuncArgOptComma -> ''
+FuncArgOptComma -> ','
+
+FuncArg -> FuncArgIdents ':' Type DefaultVal
+
+FuncArgIdents -> IDENT
+FuncArgIdents -> FuncArgIdents ',' IDENT
+
+DefaultVal -> ''
+DefaultVal -> '=' SimpleExpr
+
+FuncBody -> '->' SimpleExpr
+FuncBody -> FuncRetType LastBlock
+
+FuncRetType -> ''
+FuncRetType -> '->' Type
+
+LastBlock -> ':' Exprs 'end'
+
+Exprs -> Expr ';'
+Exprs -> Exprs Expr
+
+SimpleExpr -> IDENT
+SimpleExpr -> '(' Expr ')'
+
+Expr -> SimpleExpr
+
+IDENT -> 'ident'
