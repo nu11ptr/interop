@@ -90,21 +90,21 @@ Block
 
 // *** If ***
 
+IfElse
+    : IF SimpleExpr THEN SimpleExpr ELSE SimpleExpr
+
 If
     : IF SimpleExpr THEN ThenBody
     ;
 
 ThenBody
-    : SimpleExpr
-    | Block END
-    | SimpleExpr ELSE ElseBody
+    : Block END
     | Block ELSE ElseBody
     ;
 
 ElseBody
-    : If
-    | SimpleExpr
-    | Block END
+    : Block END
+    | If
     ;
 
 // *** Expressions ***
@@ -141,6 +141,7 @@ SimpleExpr
     | StringLit
     | CharLit
     | BoolLit
+    | IfElse
     | L_PAREN Expr R_PAREN
     ;
 
