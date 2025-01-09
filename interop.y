@@ -56,7 +56,7 @@ FuncArgsInner
     ;
 
 FuncArgOptComma
-    :
+    : %empty
     | COMMA
     ;
 
@@ -70,7 +70,7 @@ FuncArgNames
     ;
 
 DefaultVal
-    :
+    : %empty
     | ASSIGN SimpleExpr
     ;
 
@@ -80,7 +80,7 @@ FuncBody
     ;
 
 FuncRetType
-    :
+    : %empty
     | R_ARROW Type
     ;
 
@@ -92,6 +92,7 @@ Block
 
 IfElse
     : IF SimpleExpr THEN SimpleExpr ELSE SimpleExpr
+    ;
 
 If
     : IF SimpleExpr THEN Block END
