@@ -94,12 +94,8 @@ IfElse
     : IF SimpleExpr THEN SimpleExpr ELSE SimpleExpr
 
 If
-    : IF SimpleExpr THEN ThenBody
-    ;
-
-ThenBody
-    : Block END
-    | Block ELSE ElseBody
+    : IF SimpleExpr THEN Block END
+    | IF SimpleExpr THEN Block ELSE ElseBody
     ;
 
 ElseBody
