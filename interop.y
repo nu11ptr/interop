@@ -4,31 +4,31 @@
 %token INTEGER_LIT
 %token CHAR_LIT
 
-%token L_PAREN
-%token R_PAREN
-%token SEMI
-%token COLON
-%token ASSIGN
-%token COMMA
-%token R_ARROW
-%token DOT
+%token L_PAREN  '('
+%token R_PAREN  ')'
+%token SEMI     ';'
+%token COLON    ':'
+%token ASSIGN   '='
+%token COMMA    ','
+%token R_ARROW  "->"
+%token DOT      '.'
 
-%token TRUE
-%token FALSE
+%token TRUE     "true"
+%token FALSE    "false"
 
-%token FUNC
-%token END
+%token FUNC     "func"
+%token END      "end"
 
-%token IF
-%token THEN
-%token ELSE
+%token IF       "if"
+%token THEN     "then"
+%token ELSE     "else"
 
 %start File
 
 %%
 
 File
-    : Decl SEMI
+    : Decl ';'
     | File Decl
     ;
 
@@ -37,69 +37,73 @@ Decl
     ;
 
 Type
-    : Ident
+    : IDENT
+    ;
+
+OptComma
+    : %empty
+    | ','
     ;
 
 // ** Function Decl ***
 
 FuncDecl
-    : FUNC Ident L_PAREN FuncArgs R_PAREN FuncBody
+    : "func" IDENT '(' FuncArgs ')' FuncBody
     ;
 
 FuncArgs
     : %empty
-    | FuncArgsInner FuncArgOptComma
+    | FuncArgsInner OptComma
     ;
 
 FuncArgsInner
     : FuncArg
-    | FuncArgsInner COMMA FuncArg
-    ;
-
-FuncArgOptComma
-    : %empty
-    | COMMA
+    | FuncArgsInner ',' FuncArg
     ;
 
 FuncArg
-    : Ident COLON Type DefaultVal
+    : IDENT ':' Type DefaultVal
     ;
 
 DefaultVal
     : %empty
-    | ASSIGN SimpleExpr
+    | '=' SimpleExpr
     ;
 
 FuncBody
-    : R_ARROW SimpleExpr
-    | FuncRetType Block END
+    : "->" SimpleExpr
+    | FuncRetType Block "end"
     ;
 
 FuncRetType
     : %empty
-    | R_ARROW Type
+    | "->" Type
     ;
 
 // *** Blocks ***
 
 Block
-    : COLON Exprs
+    : ':' Exprs
     ;
 
 Exprs
-    : Expr SEMI
-    | Exprs Expr SEMI
+    : ExprSemi
+    | Exprs ExprSemi
+    ;
+
+ExprSemi
+    : Expr ';'
     ;
 
 // *** If ***
 
 If
-    : IF Disjunction THEN Block END
-    | IF Disjunction THEN Block ELSE ElseBody
+    : "if" Disjunction "then" Block "end"
+    | "if" Disjunction "then" Block "else" ElseBody
     ;
 
 ElseBody
-    : Block END
+    : Block "end"
     | If
     ;
 
@@ -107,51 +111,23 @@ ElseBody
 
 CallArgs
     : %empty
-    | PosCallArgs CallArgOptComma
-    | NamedCallArgs CallArgOptComma
-    | PosCallArgs COMMA NamedCallArgs CallArgOptComma
+    | PosCallArgs OptComma
+    | NamedCallArgs OptComma
+    | PosCallArgs ',' NamedCallArgs OptComma
     ;
 
 PosCallArgs
     : SimpleExpr
-    | PosCallArgs COMMA SimpleExpr
+    | PosCallArgs ',' SimpleExpr
     ;
 
 NamedCallArgs
     : NamedCallArg
-    | NamedCallArgs COMMA NamedCallArg
+    | NamedCallArgs ',' NamedCallArg
     ;
 
 NamedCallArg
-    : Ident ASSIGN SimpleExpr
-    ;
-
-CallArgOptComma
-    : %empty
-    | COMMA
-    ;
-
-// *** Ident and Literals *** /
-
-Ident
-    : IDENT
-    ;
-
-IntLit
-    : INTEGER_LIT
-    ;
-
-StringLit
-    : STRING_LIT
-    ;
-
-CharLit
-    : CHAR_LIT
-    ;
-
-BoolLit
-    : TRUE
-    | FALSE
+    : IDENT '=' SimpleExpr
     ;
 
 // *** Expressions ***
@@ -162,7 +138,7 @@ Expr
     ;
 
 SimpleExpr  
-    : IF Disjunction THEN Disjunction ELSE SimpleExpr
+    : "if" Disjunction "then" Disjunction "else" SimpleExpr
     | Disjunction
     ;
 
@@ -182,18 +158,19 @@ Inversion
     ;
 
 Primary
-    : Primary DOT Ident
-    | Primary L_PAREN CallArgs R_PAREN
+    : Primary '.' IDENT
+    | Primary '(' CallArgs ')'
     | Atom
     ;
 
 Atom
-    : IntLit
-    | StringLit
-    | CharLit
-    | BoolLit
-    | Ident
-    | L_PAREN Expr R_PAREN
+    : INTEGER_LIT
+    | STRING_LIT
+    | CHAR_LIT
+    | "true"
+    | "false"
+    | IDENT
+    | '(' Expr ')'
     ;
 
 %%
