@@ -11,6 +11,7 @@
 %token ASSIGN
 %token COMMA
 %token R_ARROW
+%token DOT
 
 %token TRUE
 %token FALSE
@@ -42,12 +43,12 @@ Type
 // ** Function Decl ***
 
 FuncDecl
-    : FUNC Ident FuncArgs FuncBody
+    : FUNC Ident L_PAREN FuncArgs R_PAREN FuncBody
     ;
 
 FuncArgs
-    : L_PAREN R_PAREN
-    | L_PAREN FuncArgsInner FuncArgOptComma R_PAREN
+    : %empty
+    | FuncArgsInner FuncArgOptComma
     ;
 
 FuncArgsInner
@@ -61,12 +62,7 @@ FuncArgOptComma
     ;
 
 FuncArg
-    : FuncArgNames COLON Type DefaultVal
-    ;
-
-FuncArgNames
-    : Ident
-    | FuncArgNames COMMA Ident
+    : Ident COLON Type DefaultVal
     ;
 
 DefaultVal
@@ -84,19 +80,22 @@ FuncRetType
     | R_ARROW Type
     ;
 
+// *** Blocks ***
+
 Block
     : COLON Exprs
     ;
 
-// *** If ***
-
-IfElse
-    : IF SimpleExpr THEN SimpleExpr ELSE SimpleExpr
+Exprs
+    : Expr SEMI
+    | Exprs Expr SEMI
     ;
 
+// *** If ***
+
 If
-    : IF SimpleExpr THEN Block END
-    | IF SimpleExpr THEN Block ELSE ElseBody
+    : IF Disjunction THEN Block END
+    | IF Disjunction THEN Block ELSE ElseBody
     ;
 
 ElseBody
@@ -104,7 +103,35 @@ ElseBody
     | If
     ;
 
-// *** Expressions ***
+// *** Call ***
+
+CallArgs
+    : %empty
+    | PosCallArgs CallArgOptComma
+    | NamedCallArgs CallArgOptComma
+    | PosCallArgs COMMA NamedCallArgs CallArgOptComma
+    ;
+
+PosCallArgs
+    : SimpleExpr
+    | PosCallArgs COMMA SimpleExpr
+    ;
+
+NamedCallArgs
+    : NamedCallArg
+    | NamedCallArgs COMMA NamedCallArg
+    ;
+
+NamedCallArg
+    : Ident ASSIGN SimpleExpr
+    ;
+
+CallArgOptComma
+    : %empty
+    | COMMA
+    ;
+
+// *** Ident and Literals *** /
 
 Ident
     : IDENT
@@ -127,24 +154,46 @@ BoolLit
     | FALSE
     ;
 
-Exprs
-    : Expr SEMI
-    | Exprs Expr
+// *** Expressions ***
+
+Expr
+    : If
+    | SimpleExpr
     ;
 
-SimpleExpr
-    : Ident
-    | IntLit
+SimpleExpr  
+    : IF Disjunction THEN Disjunction ELSE SimpleExpr
+    | Disjunction
+    ;
+
+Disjunction
+    : Disjunction "or" Conjunction
+    | Conjunction
+    ;
+
+Conjunction
+    : Conjunction "and" Inversion
+    | Inversion
+    ;
+
+Inversion
+    : "not" Inversion
+    | Primary
+    ;
+
+Primary
+    : Primary DOT Ident
+    | Primary L_PAREN CallArgs R_PAREN
+    | Atom
+    ;
+
+Atom
+    : IntLit
     | StringLit
     | CharLit
     | BoolLit
-    | IfElse
+    | Ident
     | L_PAREN Expr R_PAREN
-    ;
-
-Expr
-    : SimpleExpr
-    | If
     ;
 
 %%
