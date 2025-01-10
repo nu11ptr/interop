@@ -33,7 +33,7 @@ File
     ;
 
 Decl
-    : FuncDecl
+    : Func
     ;
 
 Type
@@ -45,33 +45,43 @@ OptComma
     | ','
     ;
 
-// ** Function Decl ***
+// ** Function ***
 
-FuncDecl
+Closure
+    : "func" '(' FuncArgs ')' FuncBody
+    ;
+
+Func
     : "func" IDENT '(' FuncArgs ')' FuncBody
     ;
 
 FuncArgs
     : %empty
-    | FuncArgsInner OptComma
+    | FuncArgsNoVal OptComma
+    | FuncArgsDefaultVal OptComma
+    | FuncArgsNoVal ',' FuncArgsDefaultVal OptComma
     ;
 
-FuncArgsInner
+FuncArgsNoVal
     : FuncArg
-    | FuncArgsInner ',' FuncArg
+    | FuncArgsNoVal ',' FuncArg
     ;
 
 FuncArg
-    : IDENT ':' Type DefaultVal
+    : IDENT ':' Type
     ;
 
-DefaultVal
-    : %empty
-    | '=' SimpleExpr
+FuncArgsDefaultVal
+    : FuncArgDefaultVal
+    | FuncArgsDefaultVal ',' FuncArgDefaultVal
+
+FuncArgDefaultVal
+    : FuncArg '=' SimpleExpr
     ;
 
 FuncBody
-    : "->" SimpleExpr
+    : SimpleExpr
+    | "->" SimpleExpr
     | FuncRetType Block "end"
     ;
 
@@ -83,16 +93,17 @@ FuncRetType
 // *** Blocks ***
 
 Block
-    : ':' Exprs
+    : ':' StmtOrExprs
     ;
 
-Exprs
-    : ExprSemi
-    | Exprs ExprSemi
+StmtOrExprs
+    : StmtOrExpr ';'
+    | StmtOrExprs StmtOrExpr ';'
     ;
 
-ExprSemi
-    : Expr ';'
+StmtOrExpr
+    : Expr
+    | Func
     ;
 
 // *** If ***
@@ -134,6 +145,7 @@ NamedCallArg
 
 Expr
     : If
+    | Closure
     | SimpleExpr
     ;
 
