@@ -127,6 +127,9 @@ pub enum TokenType {
     Minus,
 
     // Keywords
+    Or,
+    And,
+    Not,
     True,
     False,
     Func,
@@ -180,6 +183,10 @@ impl<'input> Lexer<'input> {
     const TRUE: &'static str = "true";
     const FALSE: &'static str = "false";
 
+    const OR: &'static str = "or";
+    const AND: &'static str = "and";
+    const NOT: &'static str = "not";
+
     const FUNC: &'static str = "func";
     const END: &'static str = "end";
 
@@ -191,6 +198,9 @@ impl<'input> Lexer<'input> {
         let mut keywords = HashMap::with_capacity(7);
         keywords.insert(Self::TRUE, TokenType::True);
         keywords.insert(Self::FALSE, TokenType::False);
+        keywords.insert(Self::OR, TokenType::Or);
+        keywords.insert(Self::AND, TokenType::And);
+        keywords.insert(Self::NOT, TokenType::Not);
         keywords.insert(Self::FUNC, TokenType::Func);
         keywords.insert(Self::END, TokenType::End);
         keywords.insert(Self::IF, TokenType::If);
@@ -797,6 +807,15 @@ mod test {
     #[test]
     fn bool_false() {
         lexer_single_token_test("false", TokenType::False, 0, 5);
+    }
+
+    // *** Boolean Op Tests ***
+
+    #[test]
+    fn bool_op() {
+        lexer_single_token_test("or", TokenType::Or, 0, 2);
+        lexer_single_token_test("and", TokenType::And, 0, 3);
+        lexer_single_token_test("not", TokenType::Not, 0, 3);
     }
 
     // *** Full Lexer Tests ***

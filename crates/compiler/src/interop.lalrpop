@@ -136,7 +136,7 @@ NamedCallArg: CallArg<'input> = {
 // *** If ***
 
 If: If<'input> = {
-    "if" <cond: Primary> "then" <if_body: IfBody> => {
+    "if" <cond: Disjunction> "then" <if_body: IfBody> => {
         If { cond, then_body: if_body.0, else_body: if_body.1 }
     }
 };
@@ -215,8 +215,29 @@ pub Expr: Expr<'input> = {
 };
 
 SimpleExpr: SimpleExpr<'input> = {
-    "if" <cond: Primary> "then" <then: Primary> "else" <else_: SimpleExpr> => {
+    "if" <cond: Disjunction> "then" <then: Disjunction> "else" <else_: SimpleExpr> => {
         SimpleExpr::IfThenElse(Box::new(IfThenElse {cond, then, else_}))
+    },
+    Disjunction
+};
+
+Disjunction: SimpleExpr<'input> = {
+    <lhs: Disjunction> "or" <rhs: Conjunction> => {
+        SimpleExpr::BoolCond(Box::new(BoolCond::Or(lhs, rhs)))
+    },
+    Conjunction
+};
+
+Conjunction: SimpleExpr<'input> = {
+    <lhs: Conjunction> "and" <rhs: Inversion> => {
+        SimpleExpr::BoolCond(Box::new(BoolCond::And(lhs, rhs)))
+    },
+    Inversion
+};
+
+Inversion: SimpleExpr<'input> = {
+    "not" <expr: Inversion> => {
+        SimpleExpr::BoolCond(Box::new(BoolCond::Not(expr)))
     },
     Primary
 };
@@ -275,9 +296,9 @@ extern {
         "true" => TokenType::True,
         "false" => TokenType::False,
 
-        // "or" => TokenType::Or,
-        // "and" => TokenType::And,
-        // "not" => TokenType::Not,
+        "or" => TokenType::Or,
+        "and" => TokenType::And,
+        "not" => TokenType::Not,
 
         "func" => TokenType::Func,
         "end" => TokenType::End,

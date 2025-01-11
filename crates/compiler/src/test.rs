@@ -304,3 +304,27 @@ fn if_then_else_compound_wrapped_cond() {
     let src = r"if (if test2 then 5 else 3) then 123 else 456";
     let _actual = expr_parser(src).expect("expr node");
 }
+
+#[test]
+fn bool_cond_or() {
+    let src = r"a or b";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn bool_cond_and() {
+    let src = r"a and b";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn bool_cond_not() {
+    let src = r"not a";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn bool_cond_compound() {
+    let src = r"not a or b and c";
+    let _actual = expr_parser(src).expect("expr node");
+}
