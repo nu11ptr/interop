@@ -135,8 +135,8 @@ NamedCallArg: CallArg<'input> = {
 
 // *** If ***
 
-pub If: If<'input> = {
-    "if" <cond: SimpleExpr> "then" <if_body: IfBody> => {
+If: If<'input> = {
+    "if" <cond: Primary> "then" <if_body: IfBody> => {
         If { cond, then_body: if_body.0, else_body: if_body.1 }
     }
 };
@@ -215,6 +215,9 @@ pub Expr: Expr<'input> = {
 };
 
 SimpleExpr: SimpleExpr<'input> = {
+    "if" <cond: Primary> "then" <then: Primary> "else" <else_: SimpleExpr> => {
+        SimpleExpr::IfThenElse(Box::new(IfThenElse {cond, then, else_}))
+    },
     Primary
 };
 

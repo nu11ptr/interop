@@ -114,92 +114,6 @@ fn func_args_pos_arg_after_default_val() {
     assert!(actual.is_err());
 }
 
-// *** If ***
-
-fn if_parser(src: &str) -> ParseResult<ast::If<'_>> {
-    let lexer = Lexer::new(src, false, false);
-
-    lalrpop_mod!(interop);
-    interop::IfParser::new().parse(src, lexer)
-}
-
-// #[test]
-// fn if_with_simple_then_and_else() {
-//     let src = r"if test then 123 else 456";
-//     let _actual = if_parser(src);
-// }
-
-// #[test]
-// fn if_then_block_with_simple_else() {
-//     let src = r"
-//         if test then:
-//             blah
-//             123
-//         else 456";
-//     let _actual = if_parser(src);
-// }
-
-// #[test]
-// fn if_simple_then_with_else_block() {
-//     let src = r"
-//         if test then blah else:
-//             456
-//             blah
-//         end";
-//     let _actual = if_parser(src);
-// }
-
-#[test]
-fn if_then_else_block() {
-    let src = r"
-        if test then:
-            blah
-            123
-        else:
-            456
-            blah
-        end";
-    let _actual = if_parser(src).expect("if node");
-}
-
-#[test]
-fn if_then_block() {
-    let src = r"
-        if test then:
-            blah
-            123
-        end";
-    let _actual = if_parser(src).expect("if node");
-}
-
-// #[test]
-// fn if_then_simple() {
-//     let src = r"if test then blah";
-//     let _actual = if_parser(src);
-// }
-
-// #[test]
-// fn if_with_simple_then_else_and_else_if() {
-//     let src = r"if test then 123 else if test2 then 5 else 3";
-//     let _actual = if_parser(src);
-// }
-
-#[test]
-fn if_then_else_else_if_block() {
-    let src = r"
-        if test then:
-            blah
-            123
-        else if test2 then:
-            456
-            blah
-        else:
-            blah
-            789
-        end";
-    let _actual = if_parser(src).expect("if node");
-}
-
 // *** Expr ***
 
 fn expr_parser(src: &str) -> ParseResult<ast::Expr<'_>> {
@@ -274,4 +188,119 @@ fn call_pos_after_named_args() {
     let src = r#"test(a=123, b="test", a)"#;
     let actual = expr_parser(src);
     assert!(actual.is_err());
+}
+
+#[test]
+fn if_then_else_block() {
+    let src = r"
+        if test then:
+            blah
+            123
+        else:
+            456
+            blah
+        end";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn if_then_block() {
+    let src = r"
+        if test then:
+            blah
+            123
+        end";
+    let _actual = expr_parser(src).expect("if node");
+}
+
+#[test]
+fn if_then_else_else_if_block() {
+    let src = r"
+        if test then:
+            blah
+            123
+        else if test2 then:
+            456
+            blah
+        else:
+            blah
+            789
+        end";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn if_then_else_else_if_nested_block() {
+    let src = r"
+        if test then:
+            blah
+            if test then 5 else 4
+        else if test2 then:
+            456
+            blah
+        else:
+            if test then:
+                blah
+                123
+            else:
+                blah
+            end
+
+            789
+        end";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn if_then_block_with_simple_else() {
+    let src = r"
+        if test then:
+            blah
+            123
+        else 456";
+    let actual = expr_parser(src);
+    assert!(actual.is_err());
+}
+
+#[test]
+fn if_simple_then_with_else_block() {
+    let src = r"
+        if test then blah else:
+            456
+            blah
+        end";
+    let actual = expr_parser(src);
+    assert!(actual.is_err());
+}
+
+#[test]
+fn if_then_else_basic() {
+    let src = r"if test then 123 else 456";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn if_then_else_minus_else() {
+    let src = r"if test then blah";
+    let actual = expr_parser(src);
+    assert!(actual.is_err());
+}
+
+#[test]
+fn if_then_else_compound_then() {
+    let src = r"if test then 123 else if test2 then 5 else 3";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn if_then_else_compound_cond() {
+    let src = r"if if test2 then 5 else 3 then 123 else 456";
+    let actual = expr_parser(src);
+    assert!(actual.is_err());
+}
+
+#[test]
+fn if_then_else_compound_wrapped_cond() {
+    let src = r"if (if test2 then 5 else 3) then 123 else 456";
+    let _actual = expr_parser(src).expect("expr node");
 }
