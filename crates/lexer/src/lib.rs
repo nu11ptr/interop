@@ -116,6 +116,7 @@ pub enum TokenType {
     Semi,
     Colon,
     Assign,
+    Dot,
     Comma,
     RArrow,
 
@@ -572,6 +573,7 @@ impl<'input> Iterator for Lexer<'input> {
                         }
                         ':' => self.emit_token(TokenType::Colon, idx, 1),
                         '=' => self.emit_token(TokenType::Assign, idx, 1),
+                        '.' => self.emit_token(TokenType::Dot, idx, 1),
                         ',' => self.emit_token(TokenType::Comma, idx, 1),
                         ';' => self.emit_token(TokenType::Semi, idx, 1),
                         '(' => self.emit_token(TokenType::LeftParen, idx, 1),

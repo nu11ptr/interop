@@ -34,7 +34,7 @@ Block: Block<'input> = {
 
 pub Func: Func<'input> = {
     "func" <name: Ident> "(" <args: FuncArgs?> ")" <body: FuncBody> => {
-        let args = args.unwrap_or_else(|| vec![]);
+        let args = args.unwrap_or(vec![]);
         
         Func {
             name,
@@ -92,6 +92,45 @@ FuncBody: FuncBody<'input> = {
     "->"? <SimpleExpr> => {
         FuncBody::Expr(<>)
     },
+};
+
+// *** Call ***
+
+CallArgs: Vec<CallArg<'input>> = {
+    <PosCallArgs> ","?,
+    <NamedCallArgs> ","?,
+    <mut args: PosCallArgs> "," <args2: NamedCallArgs> ","? => {
+        args.extend(args2);
+        args
+    },
+};
+
+PosCallArgs: Vec<CallArg<'input>> = {
+    PosCallArg => {
+        vec![<>]
+    },
+    <mut args: PosCallArgs> "," <arg: PosCallArg> => {
+        args.push(arg);
+        args
+    },
+};
+
+PosCallArg: CallArg<'input> = {
+    SimpleExpr => CallArg { name: None, expr: <> },
+};
+
+NamedCallArgs: Vec<CallArg<'input>> = {
+    NamedCallArg => {
+        vec![<>]
+    },
+    <mut args: NamedCallArgs> "," <arg: NamedCallArg> => {
+        args.push(arg);
+        args
+    },
+};
+
+NamedCallArg: CallArg<'input> = {
+    <name: Ident> "=" <expr: SimpleExpr> => CallArg { name: Some(name), expr },
 };
 
 // *** If ***
@@ -170,12 +209,23 @@ Type: Type<'input> = {
 
 // *** Expressions ***
 
-Expr: Expr<'input> = {
+pub Expr: Expr<'input> = {
     If => Expr::If(<>),
     SimpleExpr => Expr::Simple(<>),
 };
 
 SimpleExpr: SimpleExpr<'input> = {
+    Primary
+};
+
+Primary: SimpleExpr<'input> = {
+    <target: Primary> "." <field: Ident> => {
+        SimpleExpr::Field(Box::new(Field {target, field}))
+    },
+    <target: Primary> "(" <args: CallArgs?> ")" => {
+        let args = args.unwrap_or(vec![]);
+        SimpleExpr::Call(Box::new(Call {target, args}))
+    },
     Atom
 };
 
@@ -210,7 +260,7 @@ extern {
         ";" => TokenType::Semi,
         ":" => TokenType::Colon,
         "=" => TokenType::Assign,
-        // "." => TokenType::Dot,
+        "." => TokenType::Dot,
         "," => TokenType::Comma,
         "->" => TokenType::RArrow,
 

@@ -199,3 +199,79 @@ fn if_then_else_else_if_block() {
         end";
     let _actual = if_parser(src).expect("if node");
 }
+
+// *** Expr ***
+
+fn expr_parser(src: &str) -> ParseResult<ast::Expr<'_>> {
+    let lexer = Lexer::new(src, false, false);
+
+    lalrpop_mod!(interop);
+    interop::ExprParser::new().parse(src, lexer)
+}
+
+#[test]
+fn field_basic() {
+    let src = r"test.field";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn field_on_call() {
+    let src = r"test().field";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn field_on_wrapped_expr() {
+    let src = r"(test).field";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_no_args() {
+    let src = r"test()";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_from_field() {
+    let src = r"test.field()";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_on_call() {
+    let src = r"test()()";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_on_wrapped_expr() {
+    let src = r"(test)()";
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_pos_args() {
+    let src = r#"test(a, 123, "test")"#;
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_named_args() {
+    let src = r#"test(a=a, b=123, c="test")"#;
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_pos_and_named_args() {
+    let src = r#"test(a, b=123, c="test")"#;
+    let _actual = expr_parser(src).expect("expr node");
+}
+
+#[test]
+fn call_pos_after_named_args() {
+    let src = r#"test(a=123, b="test", a)"#;
+    let actual = expr_parser(src);
+    assert!(actual.is_err());
+}
