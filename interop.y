@@ -28,8 +28,13 @@
 %%
 
 File
+    : %empty
+    | Decls
+    ;
+
+Decls
     : Decl ';'
-    | File Decl
+    | Decls Decl ';'
     ;
 
 Decl
@@ -45,7 +50,7 @@ OptComma
     | ','
     ;
 
-// ** Function ***
+// *** Function ***
 
 Closure
     : "func" '(' FuncArgs ')' FuncBody
