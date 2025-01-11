@@ -5,53 +5,120 @@ use lalrpop_util::ParseError;
 
 grammar<'input>(input: &'input str);
 
-// // From highest to lowest precedence
-// pub Expr: i32 = {
-//     #[precedence(level="0")]
-//     Term,
-
-//     #[precedence(level="1")]
-//     #[assoc(side="left")]
-//     <l:Expr> "*" <r:Expr> => l * r,
-//     <l:Expr> "/" <r:Expr> => l / r,
-
-//     #[precedence(level="2")]
-//     #[assoc(side="left")]
-//     <l:Expr> "+" <r:Expr> => l + r,
-//     <l:Expr> "-" <r:Expr> => l - r,
-// };
-
-// pub Term: i32 = {
-//     <INT_LIT>,
-//     "(" <INT_LIT> ")",
-// };
-
-// *** Macros ***
-
-SepOptTrailing<T, C>: Vec<T> = {
-    <mut v:(<T> C)*> <e:T?> => match e {
-        None => v,
-        Some(e) => {
-            v.push(e);
-            v
-        }
-    }
-};
-
-Block<T>: Block<'input> = {
-    // Semicolon cannot be optional on last item because
-    // then it creates if/then shift/reduce issue
-    ":" <expr: (<Expr> ";")+> T => Block {expr}
-};
-
 // *** Top level ***
 
 pub File: Vec<Decl<'input>> = {
+    // NOTE: Different style than bison grammar
     SOI <(<Decl> ";")*> EOI
 };
 
 Decl: Decl<'input> = {
-    FuncDecl => Decl::Func(<>)
+    Func => Decl::Func(<>)
+};
+
+// *** Block ***
+
+StmtOrExpr: StmtOrExpr<'input> = {
+    Func => StmtOrExpr::Func(<>),
+    Expr => StmtOrExpr::Expr(<>),
+};
+
+Block: Block<'input> = {
+    // NOTE: Different style than bison grammar
+    ":" <stmt_or_exprs: (<StmtOrExpr> ";")+> => {
+        Block { stmt_or_exprs }
+    }
+};
+
+// *** Function ***
+
+pub Func: Func<'input> = {
+    "func" <name: Ident> "(" <args: FuncArgs?> ")" <body: FuncBody> => {
+        let args = args.unwrap_or_else(|| vec![]);
+        
+        Func {
+            name,
+            args,
+            body,
+        }
+    }
+};
+
+pub FuncArgs: Vec<FuncArg<'input>> = {
+    <NoValFuncArgs> ","?,
+    <DefaultValFuncArgs> ","?,
+    <mut args: NoValFuncArgs> "," <args2: DefaultValFuncArgs> ","? => {
+        args.extend(args2);
+        args
+    },
+};
+
+NoValFuncArgs: Vec<FuncArg<'input>> = {
+    NoValFuncArg => {
+        vec![<>]
+    },
+    <mut args: NoValFuncArgs> "," <arg: NoValFuncArg> => {
+        args.push(arg);
+        args
+    },
+};
+
+NoValFuncArg: FuncArg<'input> = {
+    <name: Ident> ":" <arg_type: Type> => {
+        FuncArg { name, arg_type, default_val: None }
+    }
+};
+
+DefaultValFuncArgs: Vec<FuncArg<'input>> = {
+    DefaultValFuncArg => {
+        vec![<>]
+    },
+    <mut args: DefaultValFuncArgs> "," <arg: DefaultValFuncArg> => {
+        args.push(arg);
+        args
+    },
+};
+
+DefaultValFuncArg: FuncArg<'input> = {
+    <name: Ident> ":" <arg_type: Type> "=" <default_val: SimpleExpr> => {
+        FuncArg { name, arg_type, default_val: Some(default_val) }
+    }
+};
+
+FuncBody: FuncBody<'input> = {
+    <ret_type: ("->" <Type>)?> <block: Block> "end" => {
+        FuncBody::Block(ret_type, block)
+    },
+    "->"? <SimpleExpr> => {
+        FuncBody::Expr(<>)
+    },
+};
+
+// *** If ***
+
+pub If: If<'input> = {
+    "if" <cond: SimpleExpr> "then" <if_body: IfBody> => {
+        If { cond, then_body: if_body.0, else_body: if_body.1 }
+    }
+};
+
+IfBody: (Block<'input>, Option<ElseBody<'input>>) = {
+    <block: Block> "else" <else_: ElseBody> => {
+        (block, Some(else_))
+    },
+    <Block> "end" => {
+        (<>, None)
+    }
+};
+
+ElseBody: ElseBody<'input> = {
+    <Block> "end" => {
+        ElseBody::Block(<>)
+    },
+    // Special case 'else if' to allow chaining (since not a simple expression)
+    If => {
+        ElseBody::If(Box::new(<>))
+    }
 };
 
 // *** Identifier ***
@@ -105,80 +172,20 @@ Type: Type<'input> = {
 
 Expr: Expr<'input> = {
     If => Expr::If(<>),
-    FuncDecl => Expr::Func(<>),
     SimpleExpr => Expr::Simple(<>),
 };
 
 SimpleExpr: SimpleExpr<'input> = {
-    Ident => SimpleExpr::Ident(<>),
-    IntLit => SimpleExpr::IntLit(<>),
-    StringLit => SimpleExpr::StringLit(<>),
-    CharLit => SimpleExpr::CharLit(<>),
-    "(" <Expr> ")" => SimpleExpr::Expr(Box::new(<>)),
+    Atom
 };
 
-// *** Function ***
-
-// Parse a list of function arg names
-FuncArgIdents: Vec<Ident<'input>> = {
-    // We don't want trailing comma support here
-    <arg:Ident> <args: ("," <Ident>)*> => {
-        let mut v = Vec::with_capacity(args.len() + 1);
-        v.push(arg);
-        v.extend(args);
-        v
-    }
-};
-
-// Parse a function arg duplicating type and default value to all args
-FuncArg: Vec<FuncArg<'input>> = {
-    <args: FuncArgIdents> ":" <arg_type: Type> <default_val: ("=" <SimpleExpr>)?> => {
-        args.into_iter().map(|name| FuncArg {
-            name,
-            arg_type: arg_type.clone(),
-            default_val: default_val.clone(),
-        }).collect()
-    }
-};
-
-pub FuncArgs: Vec<FuncArg<'input>> = {
-    SepOptTrailing<FuncArg, ","> => <>.into_iter().flatten().collect()
-};
-
-FuncBody: FuncBody<'input> = {
-    <ret_type: ("->" <Type>)?> <block: Block<"end">> => FuncBody::Block(ret_type, block),
-    "->"? <SimpleExpr> => FuncBody::Expr(<>),
-};
-
-pub FuncDecl: FuncDecl<'input> = {
-    "func" <name: Ident> "(" <args: FuncArgs> ")" <body: FuncBody> => {
-        FuncDecl {
-            name,
-            args,
-            body,
-        }
-    }
-};
-
-// *** If ***
-
-IfBody: (ThenBody<'input>, Option<ElseBody<'input>>) = {
-    <expr: SimpleExpr> <else_: ("else" <ElseBody>)?> => (ThenBody::Expr(expr), else_),
-    <block: Block<"else">> <else_: ElseBody> => (ThenBody::Block(block), Some(else_)),
-    Block<"end"> => (ThenBody::Block(<>), None),
-};
-
-ElseBody: ElseBody<'input> = {
-    // Special case 'else if' to allow chaining (since not a simple expression)
-    If => ElseBody::If(Box::new(<>)),
-    Block<"end"> => ElseBody::Block(<>),
-    SimpleExpr => ElseBody::Expr(<>),
-};
-
-pub If: If<'input> = {
-    "if" <cond: SimpleExpr> "then" <if_body: IfBody> => {
-        If { cond, then_body: if_body.0, else_body: if_body.1 }
-    }
+Atom: SimpleExpr<'input> = {
+    IntLit          => SimpleExpr::IntLit(<>),
+    StringLit       => SimpleExpr::StringLit(<>),
+    CharLit         => SimpleExpr::CharLit(<>),
+    BoolLit         => SimpleExpr::BoolLit(<>),
+    Ident           => SimpleExpr::Ident(<>),
+    "(" <Expr> ")"  => SimpleExpr::Expr(Box::new(<>)),
 };
 
 // *** Terminals ***
@@ -202,7 +209,8 @@ extern {
         ")" => TokenType::RightParen,
         ";" => TokenType::Semi,
         ":" => TokenType::Colon,
-        "=" => TokenType::Equals,
+        "=" => TokenType::Assign,
+        // "." => TokenType::Dot,
         "," => TokenType::Comma,
         "->" => TokenType::RArrow,
 
@@ -213,6 +221,10 @@ extern {
         
         "true" => TokenType::True,
         "false" => TokenType::False,
+
+        // "or" => TokenType::Or,
+        // "and" => TokenType::And,
+        // "not" => TokenType::Not,
 
         "func" => TokenType::Func,
         "end" => TokenType::End,

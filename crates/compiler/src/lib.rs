@@ -4,7 +4,9 @@ use lexer::{Lexer, TokenType};
 #[cfg(test)]
 mod test;
 
-pub fn compile(input: &str) -> Result<Vec<ast::Decl<'_>>, ParseError<u32, TokenType, &str>> {
+pub type ParseResult<T> = Result<T, ParseError<u32, TokenType, &'static str>>;
+
+pub fn compile(input: &str) -> ParseResult<Vec<ast::Decl<'_>>> {
     let lexer = Lexer::new(input, false, true);
 
     lalrpop_mod!(interop);

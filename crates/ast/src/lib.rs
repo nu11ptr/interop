@@ -114,36 +114,86 @@ pub enum Type<'input> {
 // *** Expressions ***
 
 #[derive(Clone, Debug, PartialEq)]
+pub enum Expr<'input> {
+    If(If<'input>),
+    Simple(SimpleExpr<'input>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum SimpleExpr<'input> {
     Ident(Ident<'input>),
     IntLit(IntLit),
     StringLit(StringLit<'input>),
     CharLit(CharLit<'input>),
+    BoolLit(BoolLit),
+    Field(Box<Field<'input>>),
+    Call(Box<Call<'input>>),
+    IfThenElse(Box<IfThenElse<'input>>),
+    BoolCond(Box<BoolCond<'input>>),
     // Expression in parens - should be rare
     Expr(Box<Expr<'input>>),
 }
 
+// *** Bool Conditional ***
+
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expr<'input> {
-    If(If<'input>),
-    Func(FuncDecl<'input>),
-    Simple(SimpleExpr<'input>),
+pub enum BoolCond<'input> {
+    Not(SimpleExpr<'input>),
+    And(SimpleExpr<'input>, SimpleExpr<'input>),
+    Or(SimpleExpr<'input>, SimpleExpr<'input>),
+}
+
+// *** If/Then/Else ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct IfThenElse<'input> {
+    pub cond: SimpleExpr<'input>,
+    pub then: SimpleExpr<'input>,
+    pub else_: SimpleExpr<'input>,
+}
+
+// *** Field ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Field<'input> {
+    pub target: SimpleExpr<'input>,
+    pub field: Ident<'input>,
+}
+
+// *** Call ***
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Call<'input> {
+    pub target: SimpleExpr<'input>,
+    pub args: Vec<CallArg<'input>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct CallArg<'input> {
+    pub name: Option<Ident<'input>>,
+    pub expr: SimpleExpr<'input>,
 }
 
 // *** Block ***
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Block<'input> {
-    pub expr: Vec<Expr<'input>>,
+    pub stmt_or_exprs: Vec<StmtOrExpr<'input>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum StmtOrExpr<'input> {
+    Func(Func<'input>),
+    Expr(Expr<'input>),
 }
 
 // *** Function ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FuncBody<'input> {
-    Expr(SimpleExpr<'input>),
-    // TODO: Move type into block? (can be used by type inference later, if needed)
-    Block(Option<Type<'input>>, Block<'input>),
+pub struct Func<'input> {
+    pub name: Ident<'input>,
+    pub args: Vec<FuncArg<'input>>,
+    pub body: FuncBody<'input>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -154,41 +204,33 @@ pub struct FuncArg<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FuncDecl<'input> {
-    pub name: Ident<'input>,
-    pub args: Vec<FuncArg<'input>>,
-    pub body: FuncBody<'input>,
+pub enum FuncBody<'input> {
+    Expr(SimpleExpr<'input>),
+    // TODO: Move type into block? (can be used by type inference later, if needed)
+    Block(Option<Type<'input>>, Block<'input>),
 }
 
 // *** If ***
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ThenBody<'input> {
-    // Lack of 'If' prevents: if <cond> then if <cond> then <expr>
-    Expr(SimpleExpr<'input>),
-    Block(Block<'input>),
+pub struct If<'input> {
+    pub cond: SimpleExpr<'input>,
+    pub then_body: Block<'input>,
+    pub else_body: Option<ElseBody<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ElseBody<'input> {
     // Special case for "else if" since "if" is not a simple expression
     If(Box<If<'input>>),
-    Expr(SimpleExpr<'input>),
     Block(Block<'input>),
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct If<'input> {
-    pub cond: SimpleExpr<'input>,
-    pub then_body: ThenBody<'input>,
-    pub else_body: Option<ElseBody<'input>>,
 }
 
 // *** Top level ***
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Decl<'input> {
-    Func(FuncDecl<'input>),
+    Func(Func<'input>),
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -115,7 +115,7 @@ pub enum TokenType {
     RightParen,
     Semi,
     Colon,
-    Equals,
+    Assign,
     Comma,
     RArrow,
 
@@ -571,7 +571,7 @@ impl<'input> Iterator for Lexer<'input> {
                             }
                         }
                         ':' => self.emit_token(TokenType::Colon, idx, 1),
-                        '=' => self.emit_token(TokenType::Equals, idx, 1),
+                        '=' => self.emit_token(TokenType::Assign, idx, 1),
                         ',' => self.emit_token(TokenType::Comma, idx, 1),
                         ';' => self.emit_token(TokenType::Semi, idx, 1),
                         '(' => self.emit_token(TokenType::LeftParen, idx, 1),
@@ -878,7 +878,7 @@ mod test {
         assert_eq!(lexer.next(), Some(Ok((140, TokenType::Func, 144))));
         assert_eq!(lexer.next(), Some(Ok((144, TokenType::Comma, 145))));
         assert_eq!(lexer.next(), Some(Ok((145, TokenType::Colon, 146))));
-        assert_eq!(lexer.next(), Some(Ok((146, TokenType::Equals, 147))));
+        assert_eq!(lexer.next(), Some(Ok((146, TokenType::Assign, 147))));
         assert_eq!(lexer.next(), Some(Ok((147, TokenType::RArrow, 149))));
 
         assert_eq!(
