@@ -7,6 +7,12 @@ pub struct Ident<'input> {
     pub name: Cow<'input, str>,
 }
 
+impl AsRef<str> for Ident<'_> {
+    fn as_ref(&self) -> &str {
+        &self.name
+    }
+}
+
 impl<'input> Ident<'input> {
     pub fn from_str(ident: &'input str) -> Self {
         Self {
@@ -35,7 +41,7 @@ pub struct BoolLit(pub bool);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct StringLit<'input> {
-    unparsed: Cow<'input, str>,
+    pub unparsed: Cow<'input, str>,
     parsed: Option<Cow<'input, str>>,
 }
 
@@ -71,7 +77,7 @@ impl<'input> StringLit<'input> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CharLit<'input> {
-    unparsed: Cow<'input, str>,
+    pub unparsed: Cow<'input, str>,
     parsed: Option<char>,
 }
 
@@ -109,6 +115,14 @@ impl<'input> CharLit<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Type<'input> {
     Simple(Ident<'input>),
+}
+
+impl AsRef<str> for Type<'_> {
+    fn as_ref(&self) -> &str {
+        match self {
+            Type::Simple(ident) => ident.as_ref(),
+        }
+    }
 }
 
 // *** Expressions ***

@@ -1,6 +1,7 @@
 use lalrpop_util::{lalrpop_mod, ParseError};
 use lexer::{Lexer, TokenType};
 
+pub mod codegen_go;
 #[cfg(test)]
 mod test;
 

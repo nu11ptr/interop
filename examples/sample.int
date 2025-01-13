@@ -1,31 +1,18 @@
-func my_func(a, b: Int = blah, c: String) -> String:
+func my_func(a: Int, c: String = "hello") -> String:
+    func my_func5() println("hello world")
+
     ends
     1
     1
 
     if blah then okay else whatever
 
-    if 1 then 1 else if 1 then:
+    if not hello and please then:
         1
+        a.a(boom)
+    else if 1 then:
         1
-    else if 1 then 1 else:
+    else:
         1
     end
 end
-
-# Style 1
-func my_func(a, b: Int = blah, c: String) -> Int:
-    123
-end
-
-# Style 2 - return type Unit
-func my_func2():
-    func my_func5() println
-    123
-end
-
-# Style 3 - return type Int
-func my_func3(a, b: Int, c: String) -> 123
-
-# Style 4 - return type unit
-func my_func4() println
